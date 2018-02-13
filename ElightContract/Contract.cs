@@ -2,6 +2,7 @@
 using Neo.SmartContract.Framework.Services.Neo;
 using Neo.SmartContract.Framework.Services.System;
 using System;
+using System.Numerics;
 
 namespace ElightContract
 {
@@ -9,7 +10,11 @@ namespace ElightContract
     {
         public static bool Main(string operation, params object[] args)
         {
-            Interpreter.Run();
+            Runtime.Notify("Main has started");
+            Runtime.Notify(Interpreter.OPCODES.ADD);
+            Runtime.Notify(Interpreter.OPCODES.NEG);
+            Runtime.Notify(Interpreter.OPCODES.SUB);
+
             return true;
         }
     }

@@ -1,36 +1,39 @@
-﻿using Neo.SmartContract.Framework.Services.Neo;
+﻿using Neo.SmartContract.Framework;
+using Neo.SmartContract.Framework.Services.Neo;
+using Neo.SmartContract.Framework.Services.System;
 using System;
+using System.Numerics;
 
 namespace ElightContract
 {
-    public class Interpreter
+    public struct Interpreter
     {
-        //[0xF0 - 0xFF] are reserved for opcodes
+        //Reserved opcodes
         public enum OPCODES {
-            NEG = 0xF0,
-            ADD = 0xF1,
-            SUB = 0xF2
+            NEG = Int32.MinValue,
+            ADD = Int32.MinValue + 1,
+            SUB = Int32.MinValue + 2
         };
         public enum REGISTERS
         {
-            ACC = 0x00000000 //accumulates result 
-        };
+            ACC = 0
+        }
 
-        private static readonly Int32 kRegistersAmount = 1;
-        private Stack stack;
-        private Int32[] a = new Int32[kRegistersAmount];
+        public const Int32 kRegistersAmount = 1;
+        public Int32[] registers;
 
-        //forbig 
-        public static void Run()
+        public static Interpreter Init()
+        {
+            Interpreter interpreter = new Interpreter() {
+                registers = new Int32[kRegistersAmount]
+            };
+
+            return interpreter;
+        }
+
+        public static void Run(Interpreter interpreter)
         {
             Runtime.Notify("Start Run");
-            
-            
-
-            Runtime.Notify("Add {0} Sub {1}", OPCODES.ADD, OPCODES.SUB);
-
-
-            Runtime.Notify("End Run");
         }
     }
 }
