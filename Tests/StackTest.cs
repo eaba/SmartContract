@@ -55,6 +55,17 @@ namespace Tests
         }
 
         [TestMethod]
+        public void IsEmpty()
+        {
+            Stack stack = Stack.Init();
+            Assert.IsTrue(Stack.IsEmpty(stack));
+            stack = Stack.Push(stack, 0x03);
+            Assert.IsFalse(Stack.IsEmpty(stack));
+            stack = Stack.Pop(stack);
+            Assert.IsTrue(Stack.IsEmpty(stack));
+        }
+
+        [TestMethod]
         public void Pop()
         {
 
@@ -77,7 +88,6 @@ namespace Tests
             Assert.ThrowsException<Exception>(() => Stack.Pop(stack));
             Assert.AreEqual(32, stack.size);
             Assert.AreEqual(-1, stack.i);
-            
         }
     }
 }

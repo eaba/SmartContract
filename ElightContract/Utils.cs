@@ -1,4 +1,5 @@
 ﻿using Neo.SmartContract.Framework;
+using Neo.SmartContract.Framework.Services.Neo;
 using System;
 
 namespace ElightContract
@@ -11,12 +12,13 @@ namespace ElightContract
             {
                 throw new Exception("Index is out of range!");
             }
-            
+
             Int32 res = 0x00000000;
             res += (src[index + 3] & 0xFF);
             res += (src[index + 2] & 0xFF) << 8;
             res += (src[index + 1] & 0xFF) << 16;
             res += (src[index + 0] & 0xFF) << 24;
+            
             return res;
         }
 
@@ -27,7 +29,7 @@ namespace ElightContract
                 throw new Exception("Index is out of range!");
             }
 
-            for (int i = 0; i < src.Length; ++ i)
+            for (Int32 i = 0; i < src.Length; ++ i)
             {
                 dst[index + i] = src[i];
             }

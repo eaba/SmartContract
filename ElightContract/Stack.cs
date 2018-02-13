@@ -20,6 +20,11 @@ namespace ElightContract
             return stack;
         }
 
+        public static bool IsEmpty(Stack stack)
+        {
+            return stack.i == -1;
+        }
+
         public static Int32 Top(Stack stack)
         {
             if (stack.i < 0)

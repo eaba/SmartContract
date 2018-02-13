@@ -12,17 +12,36 @@ namespace ElightContract
         public static bool Main(string operation, params object[] args)
         {
             Runtime.Notify("Main has started");
-            Runtime.Notify(Interpreter.OPCODES.ADD32);
-            Runtime.Notify(Interpreter.OPCODES.NEG32);
-            Runtime.Notify(Interpreter.OPCODES.SUB32);
 
-            byte[] arr = new byte[5] { 0x00, 0x00, 0x00, 0x01, 0x02 };
+            byte[] program = {
+                0x00, 0x00, 0x00, 0x01, //1
+                0x00, 0x00, 0x00, 0x02, //2
+                0x80, 0x00, 0x00, 0x01, //ADD
+                0x00, 0x00, 0x00, 0x10, //16
+                0x80, 0x00, 0x00, 0x02, //SUB
+                0x80, 0x00, 0x00, 0x00, //NEG
+            };
 
-            Runtime.Notify(arr[4]);
-            Int32 v = arr.ToInt32(0);
-            Runtime.Notify(v);
+            byte[] z = new byte[] { 0x80, 0x00, 0x00, 0x01 };
             
-            return true;
+            Int32 a = program.ToInt32(8);
+            Runtime.Notify(a);
+            Runtime.Notify(a - Int32erpreter.OPCODES.ADD32);
+            /*
+            Int32erpreter Int32erpreter = Int32erpreter.Init();
+            Int32erpreter = Int32erpreter.Run(Int32erpreter, program);
+
+            Runtime.Notify(Int32erpreter.isOk);
+            Runtime.Notify(Int32erpreter.stack.i);
+            if (Int32erpreter.isOk)
+            {
+                Int32 res = Int32erpreter.GetResult(Int32erpreter);
+                Runtime.Notify("Result ");
+                Runtime.Notify(res);
+                return true;
+            }
+            */
+            return false;
         }
     }
 }

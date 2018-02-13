@@ -26,7 +26,7 @@ namespace Tests
             v = ba.ToInt32(0);
             Assert.AreEqual(-1, v);
 
-            ba = new byte[] { 0x80, 0x00, 0x00, 0x00, 0x00 };
+            ba = new byte[] { 0x80, 0x00, 0x00, 0x00, 0x01 };
             v = ba.ToInt32(0);
             Assert.AreEqual(Int32.MinValue, v);
         }
