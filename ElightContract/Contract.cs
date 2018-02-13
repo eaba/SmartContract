@@ -12,35 +12,29 @@ namespace ElightContract
         public static bool Main(string operation, params object[] args)
         {
             Runtime.Notify("Main has started");
+            Runtime.Notify(args[0]);
 
+            // (x + 15) * 2 <= 50
             byte[] program = {
-                0x00, 0x00, 0x00, 0x01, //1
+                0x00, 0x00, 0x00, 0x0F, //15
+                0x7F, 0xFF, 0xFF, 0xFE, //SUM
                 0x00, 0x00, 0x00, 0x02, //2
-                0x80, 0x00, 0x00, 0x01, //ADD
-                0x00, 0x00, 0x00, 0x10, //16
-                0x80, 0x00, 0x00, 0x02, //SUB
-                0x80, 0x00, 0x00, 0x00, //NEG
+                0x7F, 0xFF, 0xFF, 0xFC, //MUL
+                0x00, 0x00, 0x00, 0x32, //50
+                0x7F, 0xFF, 0xFF, 0xFA, //CMP
             };
 
-            byte[] z = new byte[] { 0x80, 0x00, 0x00, 0x01 };
-            
-            Int32 a = program.ToInt32(8);
-            Runtime.Notify(a);
-            Runtime.Notify(a - Int32erpreter.OPCODES.ADD32);
-            /*
-            Int32erpreter Int32erpreter = Int32erpreter.Init();
-            Int32erpreter = Int32erpreter.Run(Int32erpreter, program);
+            Interpreter interpreter = Interpreter.Init();
+            interpreter = Interpreter.Run(interpreter, program, (byte[])args[0]);
 
-            Runtime.Notify(Int32erpreter.isOk);
-            Runtime.Notify(Int32erpreter.stack.i);
-            if (Int32erpreter.isOk)
+            if (interpreter.isOk)
             {
-                Int32 res = Int32erpreter.GetResult(Int32erpreter);
+                Int32 res = Interpreter.GetResult(interpreter);
                 Runtime.Notify("Result ");
                 Runtime.Notify(res);
                 return true;
             }
-            */
+            
             return false;
         }
     }
