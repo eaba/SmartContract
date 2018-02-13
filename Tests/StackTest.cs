@@ -26,7 +26,6 @@ namespace Tests
         [TestMethod]
         public void Push()
         {
-            
             Stack stack = Stack.Init();
 
             stack = Stack.Push(stack, 0x01);

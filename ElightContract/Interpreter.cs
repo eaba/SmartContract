@@ -10,22 +10,32 @@ namespace ElightContract
     {
         //Reserved opcodes
         public enum OPCODES {
-            NEG = Int32.MinValue,
-            ADD = Int32.MinValue + 1,
-            SUB = Int32.MinValue + 2
+            NEG32 = Int32.MinValue,
+            ADD32 = Int32.MinValue + 1,
+            SUB32 = Int32.MinValue + 2
         };
         public enum REGISTERS
         {
-            ACC = 0
+            ACC32 = 0
+        }
+
+        public enum STATUS
+        {
+            ERR = 0,
+            OK = 1
         }
 
         public const Int32 kRegistersAmount = 1;
         public Int32[] registers;
+        public Stack stack;
+        public STATUS status;
 
         public static Interpreter Init()
         {
             Interpreter interpreter = new Interpreter() {
-                registers = new Int32[kRegistersAmount]
+                registers = new Int32[kRegistersAmount],
+                stack = Stack.Init(),
+                status = STATUS.OK
             };
 
             return interpreter;
@@ -33,7 +43,7 @@ namespace ElightContract
 
         public static void Run(Interpreter interpreter)
         {
-            Runtime.Notify("Start Run");
+
         }
     }
 }
