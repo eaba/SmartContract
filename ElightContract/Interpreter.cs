@@ -51,18 +51,22 @@ namespace ElightContract
         
         public static Interpreter Run(Interpreter interpreter, byte[] program, byte[] arg)
         {
-            Runtime.Notify(arg.Length);
-            Runtime.Notify(arg);
-            if (arg.Length != 4)
+            //add arguments
+            Int32 counter = 0;
+            while (counter < arg.Length)
+            {
+                interpreter.stack = Stack.Push(interpreter.stack, arg.ToInt32(0));
+                counter = counter + 4;
+            }
+
+            if (counter != arg.Length)
             {
                 interpreter.isOk = false;
                 return interpreter;
             }
 
-            interpreter.stack = Stack.Push(interpreter.stack, arg.ToInt32(0));
-           
-            //check
-            Int32 counter = 0;
+            //run program with specified arguments
+            counter = 0;
             Int32 value = 0;
             while (counter < program.Length)
             {
