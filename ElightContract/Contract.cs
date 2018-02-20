@@ -26,28 +26,17 @@ namespace ElightContract
             return part + index;
         }
 
-        /*
-        private static void GetDescription(byte[] program)
+        private static string GetInfoKey(string sender, BigInteger index)
         {
-            Runtime.Notify(program);
-            Runtime.Notify(program.Length);
-            
-            if (program.Length < DESCRIPTION_RESERVED)
-            {
-                Runtime.Notify("Invalid program format");
-                return;
-                //throw new Exception("Invalid pragram format");
-            }
-
-            byte[] descr = new byte[DESCRIPTION_RESERVED];
-            for (int i = 0; i < DESCRIPTION_RESERVED; ++i)
-            {
-                descr[i] = program[i];
-            }
-
-            Runtime.Notify(descr);
+            string infoKey = PROGRAM_INFO_PREFIX + sender;
+            return infoKey + index;
         }
-        */
+
+        private static string GetStatusKey(string sender, BigInteger index)
+        {
+            string infoKey = PROGRAM_STATUS_PREFIX + sender;
+            return infoKey + index;
+        }
 
         private static bool Add(string sender, byte[] program, string info)
         {
@@ -74,17 +63,34 @@ namespace ElightContract
             PutStatus(sender, counter, STATUS.ACTIVE);
             return true;
         }
+        
+        private static STATUS GetStatus(string sender, BigInteger counter)
+        {
+            string statusKey = GetStatusKey(sender, counter);
+            byte[] status = Storage.Get(Storage.CurrentContext, statusKey);
+            Runtime.Notify(status[0]);
+            return (STATUS)status[0];
+        }
 
         private static void PutStatus(string sender, BigInteger counter, STATUS status)
         {
             Runtime.Notify("PutStatus");
             Runtime.Notify(status);
 
-            string statusKey = PROGRAM_STATUS_PREFIX + sender + counter;
+            string statusKey = GetStatusKey(sender, counter);
             Runtime.Notify(statusKey);
 
             Storage.Delete(Storage.CurrentContext, statusKey);
             Storage.Put(Storage.CurrentContext, statusKey, (Int32)status);
+        }
+
+        private static byte[] GetInfo(string sender, BigInteger counter)
+        {
+            Runtime.Notify("GetInfo");
+            string infoKey = GetInfoKey(sender, counter);
+            byte[] info = Storage.Get(Storage.CurrentContext, infoKey);
+            Runtime.Notify(info);
+            return info;
         }
 
         private static void PutInfo(string sender, BigInteger counter, string info)
@@ -92,19 +98,10 @@ namespace ElightContract
             Runtime.Notify("PutInfo");
             Runtime.Notify(info);
 
-            string infoKey = PROGRAM_INFO_PREFIX + sender + counter;
+            string infoKey = GetInfoKey(sender, counter);
             Runtime.Notify(infoKey);
-
-            Storage.Delete(Storage.CurrentContext, infoKey);
+            
             Storage.Put(Storage.CurrentContext, infoKey, info);
-        }
-
-        private static STATUS GetStatus(string sender, BigInteger counter)
-        {
-            string statusKey = PROGRAM_STATUS_PREFIX + sender + counter;
-            byte[] status = Storage.Get(Storage.CurrentContext, statusKey);
-            Runtime.Notify(status[0]);
-            return (STATUS)status[0];
         }
 
         private static void PutCounter(string sender, BigInteger counter)
@@ -181,18 +178,22 @@ namespace ElightContract
         //testinvoke 0cf75529998137d1bb5baa47f9efc82852a32260 add ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y","000000027ffffffe",12]
         //testinvoke 0cf75529998137d1bb5baa47f9efc82852a32260 invoke ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y",1,b'0000000f']  17
         //testinvoke 0cf75529998137d1bb5baa47f9efc82852a32260 invoke ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y",1,b'0000000f'] -17
-        public static bool Main(string operation, params object[] args)
+        public static object Main(string operation, params object[] args)
         {
-            Runtime.Notify(operation);
-            Runtime.Notify(args[0]); 
-            Runtime.Notify(args[1]);
-            Runtime.Notify(args[2]);
-            Runtime.Notify(((byte[])args[2]).Length);
+            Storage.Put(Storage.CurrentContext, "hello", "world");
+            byte[] res = Storage.Get(Storage.CurrentContext, "hello");
+            Runtime.Notify(res);
             
             if (operation == "add")
             {
                 Runtime.Notify("adding program");
                 return Add((string)args[0], (byte[])args[1], (string)args[2]);
+            }
+            else if (operation == "get")
+            {
+                byte[] info = GetInfo((string)args[0], (BigInteger)args[1]);
+                Runtime.Notify(info);
+                return true;
             }
             else if (operation == "invoke")
             {
@@ -201,6 +202,34 @@ namespace ElightContract
                 Runtime.Notify(args[1]);
                 return Invoke((string)args[0], (BigInteger)args[1], (byte[])args[2]);
             }
+            else if (operation == "mint")
+            {
+                return Token.MintTokens();
+            }
+            else if (operation == "transfer")
+            {
+                string from = (string)args[0];
+                string to = (string)args[1];
+                BigInteger value = (BigInteger)args[2];
+                return Token.Transfer(from, to, value);
+            }
+            else if (operation == "name")
+            {
+                return Token.Name();
+            }
+            else if (operation == "symbol")
+            {
+                return Token.Symbol();
+            }
+            else if (operation == "total")
+            {
+                return Token.TotalSupply();
+            }
+            else if (operation == "decimals")
+            {
+                return Token.Decimals();
+            }
+            
             return true;
         }
     }
