@@ -67,7 +67,7 @@ namespace ElightContract
             Storage.Put(Storage.CurrentContext, key, program);
 
             PutCounter(sender, counter);
-            PutStatus(sender, counter, STATUS.ACTIVE);
+            //PutStatus(sender, counter, STATUS.ACTIVE);
             return true;
         }
 
@@ -138,25 +138,41 @@ namespace ElightContract
         }
 
         //01 0705050205
-        public static bool Main(string operation, byte[] program, byte[] arg, int i, params object[] args)
+        //testinvoke 0cf75529998137d1bb5baa47f9efc82852a32260 add ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y","000000027ffffffe7fffffff",12]
+        //testinvoke 0cf75529998137d1bb5baa47f9efc82852a32260 add ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y","000000027ffffffe",12]
+        //testinvoke 0cf75529998137d1bb5baa47f9efc82852a32260 invoke ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y",1,b'0000000f']  17
+        //testinvoke 0cf75529998137d1bb5baa47f9efc82852a32260 invoke ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y",1,b'0000000f'] -17
+        public static bool Main(string operation, params object[] args)
         {
-            PutStatus((string)args[0], i, STATUS.ACTIVE);
-            //GetDescription(program);
-            return true;
-            /*
-            if (operation == "add")
+            Runtime.Notify(operation);
+            Runtime.Notify(args[0]);
+            Runtime.Notify(args[1]);
+            Runtime.Notify(args[2]);
+            Runtime.Notify(((byte[])args[2]).Length);
+            
+            if (operation == "check")
+            {
+                Runtime.Notify("check");
+                if (!Runtime.CheckWitness((byte[])args[0]))
+                {
+                    Runtime.Notify("Invalid witness");
+                    return false;
+                }
+                Runtime.Notify("Valid witness");
+            } 
+            else if (operation == "add")
             {
                 Runtime.Notify("adding program");
-                return Add((string)args[0], program);
+                return Add((string)args[0], (byte[])args[1]);
             }
             else if (operation == "invoke")
             {
                 Runtime.Notify("Start invoking");
                 Runtime.Notify(args[0]);
-                Runtime.Notify(i);
+                Runtime.Notify(args[1]);
                 //return true;
-                return Invoke((string)args[0], i, arg);
-            }
+                return Invoke((string)args[0], (BigInteger)args[1], (byte[])args[2]);
+            }/*
             else if (operation == "runProgram")
             {
                 Runtime.Notify("Running program");
@@ -170,9 +186,8 @@ namespace ElightContract
                     Runtime.Notify(res);
                     return true;
                 }
-            } 
+            } */
             return true;
-            */
         }
     }
 }
