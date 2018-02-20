@@ -12,7 +12,8 @@ namespace ElightContract
         {
             ACTIVE = 0,
             SUCCESS,
-            FAILURE
+            FAILURE,
+            EXECUTION_ERROR
         }
         private static char PROGRAM_PREFIX => 'P';
         private static char PROGRAM_COUNTER_PREFIX => 'C';
@@ -98,11 +99,12 @@ namespace ElightContract
             Storage.Put(Storage.CurrentContext, infoKey, info);
         }
 
-        private static void GetStatus(string sender, BigInteger counter)
+        private static STATUS GetStatus(string sender, BigInteger counter)
         {
             string statusKey = PROGRAM_STATUS_PREFIX + sender + counter;
             byte[] status = Storage.Get(Storage.CurrentContext, statusKey);
-            Runtime.Notify(status);
+            Runtime.Notify(status[0]);
+            return (STATUS)status[0];
         }
 
         private static void PutCounter(string sender, BigInteger counter)
@@ -115,7 +117,7 @@ namespace ElightContract
 
         private static BigInteger GetCounter(string sender)
         {
-            string counterKey = PROGRAM_INFO_PREFIX + sender;
+            string counterKey = PROGRAM_COUNTER_PREFIX + sender;
             byte[] res = Storage.Get(Storage.CurrentContext, counterKey);
             return (res.Length == 0) ? 0 : res.AsBigInteger();
         }
@@ -127,6 +129,14 @@ namespace ElightContract
                 Runtime.Notify("Invalid witness");
                 return false;
             }
+
+            STATUS status = GetStatus(sender, i);
+            if (status != STATUS.ACTIVE)
+            {
+                Runtime.Notify("Already executeds");
+                return false;
+            }
+
             string key = GetProgramKey(sender, i);
 
             byte[] program = Storage.Get(Storage.CurrentContext, key);
@@ -143,16 +153,30 @@ namespace ElightContract
 
             if (interpreter.isOk)
             {
+                
                 Int32 res = Interpreter.GetResult(interpreter);
                 Runtime.Notify("Result ");
                 Runtime.Notify(res);
+                bool a = res == 1;
+                if (a)
+                {
+                    PutStatus(sender, i, STATUS.SUCCESS);
+                    Runtime.Notify("OK");
+                } else
+                {
+                    PutStatus(sender, i, STATUS.FAILURE);
+                    Runtime.Notify("HE OK");
+                }
                 return true;
             }
+
+            PutStatus(sender, i, STATUS.EXECUTION_ERROR);
+            Runtime.Notify("HE OK");
 
             return true;
         }
 
-        //01 0705050205
+        //01 0705
         //testinvoke 0cf75529998137d1bb5baa47f9efc82852a32260 add ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y","000000027ffffffe7fffffff",12]
         //testinvoke 0cf75529998137d1bb5baa47f9efc82852a32260 add ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y","000000027ffffffe",12]
         //testinvoke 0cf75529998137d1bb5baa47f9efc82852a32260 invoke ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y",1,b'0000000f']  17
