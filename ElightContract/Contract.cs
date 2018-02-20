@@ -17,7 +17,7 @@ namespace ElightContract
         private static char PROGRAM_PREFIX => 'P';
         private static char PROGRAM_COUNTER_PREFIX => 'C';
         private static char PROGRAM_STATUS_PREFIX => 'S';
-        private const Int32 DESCRIPTION_RESERVED = 16;
+        private static char PROGRAM_INFO_PREFIX => 'I';
 
         private static string GetProgramKey(string sender, BigInteger index)
         {
@@ -25,6 +25,7 @@ namespace ElightContract
             return part + index;
         }
 
+        /*
         private static void GetDescription(byte[] program)
         {
             Runtime.Notify(program);
@@ -45,8 +46,9 @@ namespace ElightContract
 
             Runtime.Notify(descr);
         }
+        */
 
-        private static bool Add(string sender, byte[] program)
+        private static bool Add(string sender, byte[] program, string info)
         {
             Runtime.Notify("Start adding");
             if (!Runtime.CheckWitness(sender.AsByteArray()))
@@ -67,7 +69,8 @@ namespace ElightContract
             Storage.Put(Storage.CurrentContext, key, program);
 
             PutCounter(sender, counter);
-            //PutStatus(sender, counter, STATUS.ACTIVE);
+            PutInfo(sender, counter, info);
+            PutStatus(sender, counter, STATUS.ACTIVE);
             return true;
         }
 
@@ -81,6 +84,18 @@ namespace ElightContract
 
             Storage.Delete(Storage.CurrentContext, statusKey);
             Storage.Put(Storage.CurrentContext, statusKey, (Int32)status);
+        }
+
+        private static void PutInfo(string sender, BigInteger counter, string info)
+        {
+            Runtime.Notify("PutInfo");
+            Runtime.Notify(info);
+
+            string infoKey = PROGRAM_INFO_PREFIX + sender + counter;
+            Runtime.Notify(infoKey);
+
+            Storage.Delete(Storage.CurrentContext, infoKey);
+            Storage.Put(Storage.CurrentContext, infoKey, info);
         }
 
         private static void GetStatus(string sender, BigInteger counter)
@@ -100,7 +115,7 @@ namespace ElightContract
 
         private static BigInteger GetCounter(string sender)
         {
-            string counterKey = PROGRAM_COUNTER_PREFIX + sender;
+            string counterKey = PROGRAM_INFO_PREFIX + sender;
             byte[] res = Storage.Get(Storage.CurrentContext, counterKey);
             return (res.Length == 0) ? 0 : res.AsBigInteger();
         }
@@ -145,48 +160,23 @@ namespace ElightContract
         public static bool Main(string operation, params object[] args)
         {
             Runtime.Notify(operation);
-            Runtime.Notify(args[0]);
+            Runtime.Notify(args[0]); 
             Runtime.Notify(args[1]);
             Runtime.Notify(args[2]);
             Runtime.Notify(((byte[])args[2]).Length);
             
-            if (operation == "check")
-            {
-                Runtime.Notify("check");
-                if (!Runtime.CheckWitness((byte[])args[0]))
-                {
-                    Runtime.Notify("Invalid witness");
-                    return false;
-                }
-                Runtime.Notify("Valid witness");
-            } 
-            else if (operation == "add")
+            if (operation == "add")
             {
                 Runtime.Notify("adding program");
-                return Add((string)args[0], (byte[])args[1]);
+                return Add((string)args[0], (byte[])args[1], (string)args[2]);
             }
             else if (operation == "invoke")
             {
                 Runtime.Notify("Start invoking");
                 Runtime.Notify(args[0]);
                 Runtime.Notify(args[1]);
-                //return true;
                 return Invoke((string)args[0], (BigInteger)args[1], (byte[])args[2]);
-            }/*
-            else if (operation == "runProgram")
-            {
-                Runtime.Notify("Running program");
-                Interpreter interpreter = Interpreter.Init();
-                interpreter = Interpreter.Run(interpreter, program, arg);
-
-                if (interpreter.isOk)
-                {
-                    Int32 res = Interpreter.GetResult(interpreter);
-                    Runtime.Notify("Result ");
-                    Runtime.Notify(res);
-                    return true;
-                }
-            } */
+            }
             return true;
         }
     }

@@ -75,6 +75,7 @@ namespace ElightContract
 
                 Int32 a = 0;
                 Int32 b = 0;
+                Int32 c = 0;
                 
                 if (value == (Int32)OPCODES.NEG)
                 {
@@ -116,7 +117,9 @@ namespace ElightContract
                     interpreter.stack = Stack.Pop(interpreter.stack);
                     b = Stack.Top(interpreter.stack);
                     interpreter.stack = Stack.Pop(interpreter.stack);
-                    Int32 res = b == a ? 0 : (b > a ? 1 : -1); 
+                    c = Stack.Top(interpreter.stack);
+                    interpreter.stack = Stack.Pop(interpreter.stack);
+                    Int32 res = b < c && c < a ? 1 : -1; 
                     interpreter.stack = Stack.Push(interpreter.stack, res);
                 }
                 else

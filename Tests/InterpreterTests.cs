@@ -19,22 +19,57 @@ namespace Tests
         public void Run()
         {
             Interpreter interpreter = Interpreter.Init();
-            byte[] arg = { 0x00, 0x00, 0x00, 0x01 };
-            byte[] program = {
+            byte[] arg1 = { 0x00, 0x00, 0x00, 0x01 };
+            // -26 < ((x + 2) * (-3)) < 26
+            byte[] program1 = {
                 0x00, 0x00, 0x00, 0x02, //2
                 0x7F, 0xFF, 0xFF, 0xFE, //SUM
-                0x00, 0x00, 0x00, 0x10, //16
-                0x7F, 0xFF, 0xFF, 0xFD, //SUB
+                0x00, 0x00, 0x00, 0x03, //3
                 0x7F, 0xFF, 0xFF, 0xFF, //NEG
-                0x00, 0x00, 0x00, 0x02, //2
                 0x7F, 0xFF, 0xFF, 0xFC, //MUL
+                0x00, 0x00, 0x00, 0x1A, //26
+                0x7F, 0xFF, 0xFF, 0xFF, //NEG
                 0x00, 0x00, 0x00, 0x1A, //26
                 0x7F, 0xFF, 0xFF, 0xFA, //CMP
             };
 
-            interpreter = Interpreter.Run(interpreter, program, arg);
+            interpreter = Interpreter.Run(interpreter, program1, arg1);
             Assert.IsTrue(interpreter.isOk);
-            Assert.AreEqual(0, Interpreter.GetResult(interpreter));
+            Assert.AreEqual(1, Interpreter.GetResult(interpreter));
+
+
+            byte[] arg2 = { 0x00, 0x00, 0x00, 0x18 };
+            // -26 < (x + 2) < 26
+            byte[] program2 = {
+                0x00, 0x00, 0x00, 0x02, //2
+                0x7F, 0xFF, 0xFF, 0xFE, //SUM
+                0x00, 0x00, 0x00, 0x1A, //26
+                0x7F, 0xFF, 0xFF, 0xFF, //NEG
+                0x00, 0x00, 0x00, 0x1A, //26
+                0x7F, 0xFF, 0xFF, 0xFA, //CMP
+            };
+
+            interpreter = Interpreter.Init();
+            interpreter = Interpreter.Run(interpreter, program2, arg2);
+            Assert.IsTrue(interpreter.isOk);
+            Assert.AreEqual(-1, Interpreter.GetResult(interpreter));
+
+
+            byte[] arg3 = { 0x00, 0x00, 0x00, 0x3f };
+            // -26 < (x + 2) < 26
+            byte[] program3 = {
+                0x00, 0x00, 0x00, 0x02, //2
+                0x7F, 0xFF, 0xFF, 0xFE, //SUM
+                0x00, 0x00, 0x00, 0x1A, //26
+                0x7F, 0xFF, 0xFF, 0xFF, //NEG
+                0x00, 0x00, 0x00, 0x1A, //26
+                0x7F, 0xFF, 0xFF, 0xFA, //CMP
+            };
+
+            interpreter = Interpreter.Init();
+            interpreter = Interpreter.Run(interpreter, program3, arg3);
+            Assert.IsTrue(interpreter.isOk);
+            Assert.AreEqual(-1, Interpreter.GetResult(interpreter));
         }
     }
 }
