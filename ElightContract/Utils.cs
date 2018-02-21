@@ -32,7 +32,6 @@ namespace ElightContract
             BigInteger bi = src;
             return bi.AsByteArray().Concat(nulls).Take(4);
         }
-        
 
         public static Int32[] Copyto(this Int32[] src, Int32[] dst, Int32 index)
         {

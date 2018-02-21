@@ -54,9 +54,9 @@ namespace ElightContract
         public static Contract InitDeposit(Contract contract, byte[] carrierHash, 
             byte[] clientHash, BigInteger contribution)
         {
-            contract.Deposit = Deposit.Init(carrierHash, clientHash);
+            contract.Deposit = Deposit.Init(carrierHash, clientHash, contribution);
             
-            if (Deposit.Freeze(contract.Deposit, contribution))
+            if (Deposit.Freeze(contract.Deposit))
             {
                 //deposit has been assigned successfuly
                 contract.ContractOption = Option.WithDeposit;

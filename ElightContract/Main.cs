@@ -58,12 +58,18 @@ namespace ElightContract
             Contract.ChangeStatus(contract, carrierHash, status);
             return status != Contract.STATUS.EXECUTION_ERROR;
         }
-        
+
 
         //05 0705
+        //invoke without depositing
         //testinvoke script_hash add ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y","-26<(x+2)<26",b'000000027ffffffe0000001a7fffffff0000001a7ffffffa']
         //testinvoke script_hash invoke ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y",1,b'0000000f'] //true
         //testinvoke script_hash invoke ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y",1,b'0000001a'] //false
+
+        //invoke with depositing
+        //testinvoke 4e3ec9a15812161d01d758ddbe3267ed19da7d88 mint[] --attach-neo=1  mint some tokens
+        //init contract with depositing option
+        //testinvoke bb8580f757e3aac7e15b13d53ec9adfa18980012 initDeposit ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y","-26<(x+2)<26",b'000000027ffffffe0000001a7fffffff0000001af7ffffffa',"AKDVzYGLczmykdtRaejgvWeZrvdkVEvQ1X",1]
         public static object Main(string operation, params object[] args)
         {
             if (operation == "init")
