@@ -12,7 +12,7 @@ namespace ElightContract
         public const Int32 DepositSize = kHashSize << 1 + 4;
         public byte[] СarrierHash; 
         public byte[] ClientHash;
-        public BigInteger Contribution;
+        public BigInteger Amount;
  
         public static byte[] GetAgentAddress(Deposit deposit)
         {
@@ -20,7 +20,7 @@ namespace ElightContract
         }
 
         public static Deposit Init(byte[] carrierHash, 
-            byte[] clientHash, BigInteger contribution)
+            byte[] clientHash, BigInteger amount)
         {
             if (carrierHash.Length != kHashSize || clientHash.Length != kHashSize)
             {
@@ -32,7 +32,7 @@ namespace ElightContract
             {
                 СarrierHash = carrierHash,
                 ClientHash = clientHash,
-                Contribution = contribution
+                Amount = amount
             };
         }
 
@@ -40,14 +40,14 @@ namespace ElightContract
         {
             BigInteger balance = Token.BalanceOf(deposit.СarrierHash);
 
-            if (deposit.Contribution > balance)
+            if (deposit.Amount > balance)
             {
                 Runtime.Notify("Unable to freeze money. deposit > balance");
                 return false;
             }
 
             byte[] agent = GetAgentAddress(deposit);
-            Token.Transfer(deposit.СarrierHash, agent, deposit.Contribution);
+            Token.Transfer(deposit.СarrierHash, agent, deposit.Amount);
             return true;
         }
 
@@ -66,11 +66,11 @@ namespace ElightContract
         {
             Runtime.Notify(deposit.СarrierHash
                 .Concat(deposit.ClientHash)
-                .Concat(((Int32)deposit.Contribution).ToByteArray()).Length);
+                .Concat(((Int32)deposit.Amount).ToByteArray()).Length);
 
             return deposit.СarrierHash
                 .Concat(deposit.ClientHash)
-                .Concat(((Int32)deposit.Contribution).ToByteArray());
+                .Concat(((Int32)deposit.Amount).ToByteArray());
         }
 
         //[СarrierHash][ClientHash]
@@ -82,7 +82,7 @@ namespace ElightContract
             {
                 СarrierHash = ba.Take(kHashSize),
                 ClientHash = ba.Range(kHashSize, kHashSize),
-                Contribution = ba.ToInt32(kHashSize << 1, false)
+                Amount = ba.ToInt32(kHashSize << 1, false)
             };
         }
     }

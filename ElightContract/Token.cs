@@ -66,10 +66,10 @@ namespace ElightContract
                 return true;
             }
             
-            BigInteger contribution = Storage.Get(Storage.CurrentContext, from).AsBigInteger();
+            BigInteger amount = Storage.Get(Storage.CurrentContext, from).AsBigInteger();
             Storage.Delete(Storage.CurrentContext, from);
             BigInteger toValue = Storage.Get(Storage.CurrentContext, to).AsBigInteger();
-            Storage.Put(Storage.CurrentContext, to, toValue + contribution);
+            Storage.Put(Storage.CurrentContext, to, toValue + amount);
             Runtime.Notify("Transfer was forced");
             return true;
         }

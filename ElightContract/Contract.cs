@@ -52,9 +52,9 @@ namespace ElightContract
         }
 
         public static Contract InitDeposit(Contract contract, byte[] carrierHash, 
-            byte[] clientHash, BigInteger contribution)
+            byte[] clientHash, BigInteger amount)
         {
-            contract.Deposit = Deposit.Init(carrierHash, clientHash, contribution);
+            contract.Deposit = Deposit.Init(carrierHash, clientHash, amount);
             
             if (Deposit.Freeze(contract.Deposit))
             {
