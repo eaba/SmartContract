@@ -2,6 +2,7 @@
 
 namespace ElightContract
 {
+    //Stack data structure that operates with Int32 datatype
     public struct Stack
     {
         public const Int32 kDefaultSize = 1;
@@ -50,10 +51,11 @@ namespace ElightContract
         {
             if (stack.i + 1 >= stack.size)
             {
-                //makes push 0(1) in average
+                //it's important to increase stack.size exponentially, not linearly
+                //because it makes push operation to cost 0(1) in average, otherwise it would be o(n)
                 Int32 newSize = stack.size << 1;
                 Stack newStack = Init(newSize);
-
+                
                 stack.arr.Copyto(newStack.arr, 0);
 
                 stack.arr = newStack.arr;

@@ -5,6 +5,7 @@ using System.Numerics;
 
 namespace ElightContract
 {
+    //this functions / extensions are defined purely for enchancing readability and convinience
     public static class Utils
     {
         public static Int32 ToInt32(this byte[] src, Int32 index, bool littleEndian = true)
@@ -24,7 +25,7 @@ namespace ElightContract
             return res;
         }
         
-        //bit Endian
+        //Big endian
         public static byte[] ToByteArray(this Int32 src)
         {
             byte[] nulls = new byte[4] { 0x00, 0x00, 0x00, 0x00 };

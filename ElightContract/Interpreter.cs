@@ -11,12 +11,12 @@ namespace ElightContract
         //Reserved opcodes
         public enum OPCODES
         {
-            NEG  = 0x7FFFFFFF,
-            SUM  = 0x7FFFFFFE,
-            SUB  = 0x7FFFFFFD,
-            MUL  = 0x7FFFFFFC,
-            ACC  = 0x7FFFFFFB,
-            CMP  = 0x7FFFFFFA,
+            NEG  = 0x7FFFFFFF, // MULTIPLY BY -1
+            SUM  = 0x7FFFFFFE, // a, b => a + b
+            SUB  = 0x7FFFFFFD, // a, b => a - b
+            MUL  = 0x7FFFFFFC, // a, b => a * b 
+            ACC  = 0x7FFFFFFB, // a => acc_register + a
+            CMP  = 0x7FFFFFFA, // a, b, c => b < a < c 
         };
         public enum REGISTERS
         {
@@ -26,7 +26,7 @@ namespace ElightContract
         public const Int32 kRegistersAmount = 1;
         public Int32[] registers;
         public Stack stack;
-        public bool isOk;
+        public bool isOk;  //whether interpreter executed a program without errors
 
         public static Interpreter Init()
         {

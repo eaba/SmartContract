@@ -9,15 +9,15 @@ namespace ElightContract
     {
         public enum STATUS
         {
-            ACTIVE = 0,
-            SUCCESS,
-            FAILURE,
-            EXECUTION_ERROR
+            ACTIVE = 0,       //hasn't been executed yet
+            SUCCESS,          //has been executed, result lays in specified borders
+            FAILURE,          //has been executed, result doesn't in specified borders
+            EXECUTION_ERROR   //has executed with errors
         }
 
         public STATUS Status;
-        public byte[] Info;
-        public byte[] Source;
+        public byte[] Info;   //additional data, for example, author, description etc
+        public byte[] Source; //byte code for interpreter
 
         private static string GetProgramKey(string authorAddress, BigInteger index)
         {
@@ -63,6 +63,7 @@ namespace ElightContract
             return (Program)program;
         }
 
+        //store program in blockchain 
         public static bool PutProgram(Program program, string authorAddress)
         {
             Runtime.Notify("PutProgram");
@@ -86,7 +87,7 @@ namespace ElightContract
             Storage.Put(Storage.CurrentContext, programKey, (byte[])program);
             return true;
         }
-
+        
         private static bool UpdateProgram(Program program, string authorAddress)
         {
             Runtime.Notify("UpdateProgram");
@@ -109,6 +110,7 @@ namespace ElightContract
             return true;
         }
 
+        //after a propgram has been executed, its status should be changed
         public static Program ChangeStatus(Program program, string authorAddress, STATUS status)
         {
             program.Status = status;
@@ -118,6 +120,7 @@ namespace ElightContract
             return program;
         }
 
+        //Type conversations to make possible to store Program structure in blockchain
         //[STATUS][INFO LENGTH][INFO DATA][SRC LENGTH][SRC DATA]
         //[4 byte][  4 bytes  ][ arbitary][ 4 bytes  ][arbitary]
         public static explicit operator byte[] (Program program)

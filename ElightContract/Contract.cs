@@ -60,6 +60,10 @@ namespace ElightContract
         {
             if (operation == "add")
             {
+                Runtime.Notify(args[0]);
+                Runtime.Notify(args[1]);
+                Runtime.Notify(args[2]);
+
                 Runtime.Notify(((byte[])args[2]).ToInt32(0));
                 Runtime.Notify(((byte[])args[2]).ToInt32(4));
                 Runtime.Notify(((byte[])args[2]).ToInt32(8));
@@ -72,7 +76,9 @@ namespace ElightContract
             }
             else if (operation == "invoke") 
             {
-                Runtime.Notify(((byte[])args[2]).ToInt32(0));
+                Runtime.Notify(args[0]);
+                Runtime.Notify(args[1]);
+                Runtime.Notify(args[2]);
                 return Invoke((string)args[0], (BigInteger)args[1], (byte[])args[2]);
             }
             else if (operation == "mint")
