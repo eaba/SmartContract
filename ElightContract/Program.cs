@@ -87,6 +87,37 @@ namespace ElightContract
             return true;
         }
 
+        private static bool UpdateProgram(Program program, string authorAddress)
+        {
+            Runtime.Notify("UpdateProgram");
+            if (!Runtime.CheckWitness(authorAddress.AsByteArray()))
+            {
+                Runtime.Notify("Invalid witness");
+                return false;
+            }
+
+            BigInteger programCounter = GetProgramCounter(authorAddress);
+            Runtime.Notify("Counter");
+            Runtime.Notify(programCounter);
+
+            string programCounterKey = GetProgramCounterKey(authorAddress);
+            string programKey = GetProgramKey(authorAddress, programCounter);
+            Runtime.Notify(programCounterKey);
+            Runtime.Notify(programKey);
+
+            Storage.Put(Storage.CurrentContext, programCounterKey, programCounter);
+            return true;
+        }
+
+        public static Program ChangeStatus(Program program, string authorAddress, STATUS status)
+        {
+            program.Status = status;
+            BigInteger programCounter = GetProgramCounter(authorAddress);
+            string programKey = GetProgramKey(authorAddress, programCounter);
+            Storage.Put(Storage.CurrentContext, programKey, (byte[])program);
+            return program;
+        }
+
         //[STATUS][INFO LENGTH][INFO DATA][SRC LENGTH][SRC DATA]
         //[4 byte][  4 bytes  ][ arbitary][ 4 bytes  ][arbitary]
         public static explicit operator byte[] (Program program)

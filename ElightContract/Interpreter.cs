@@ -49,7 +49,7 @@ namespace ElightContract
             return Stack.Top(Interpreter.stack);
         }
         
-        public static Interpreter Run(Interpreter interpreter, byte[] program, byte[] arg)
+        public static Interpreter Run(Interpreter interpreter, Program program, byte[] arg)
         {
             //add arguments
             Int32 counter = 0;
@@ -68,9 +68,9 @@ namespace ElightContract
             //run program with specified arguments
             counter = 0;
             Int32 value = 0;
-            while (counter < program.Length)
+            while (counter < program.Source.Length)
             {
-                value = program.ToInt32(counter);
+                value = program.Source.ToInt32(counter);
                 counter += 4;
 
                 Int32 a = 0;
@@ -128,7 +128,7 @@ namespace ElightContract
                 }
             }
             
-            interpreter.isOk = interpreter.stack.i == 0 & counter == program.Length;
+            interpreter.isOk = interpreter.stack.i == 0 & counter == program.Source.Length;
             return interpreter;
         }
     }

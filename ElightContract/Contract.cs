@@ -8,221 +8,71 @@ namespace ElightContract
 {
     public class Contract : SmartContract
     {
-        private enum STATUS
+        public static bool Invoke(string authorAddress, BigInteger i, byte[] arg)
         {
-            ACTIVE = 0,
-            SUCCESS,
-            FAILURE,
-            EXECUTION_ERROR
-        } 
-        private static char PROGRAM_PREFIX => 'P';
-        private static char PROGRAM_COUNTER_PREFIX => 'C';
-        private static char PROGRAM_STATUS_PREFIX => 'S';
-        private static char PROGRAM_INFO_PREFIX => 'I';
-
-        private static string GetProgramKey(string sender, BigInteger index)
-        {
-            string part = PROGRAM_PREFIX + sender;
-            return part + index;
-        }
-
-        private static string GetInfoKey(string sender, BigInteger index)
-        {
-            string infoKey = PROGRAM_INFO_PREFIX + sender;
-            return infoKey + index;
-        }
-
-        private static string GetStatusKey(string sender, BigInteger index)
-        {
-            string infoKey = PROGRAM_STATUS_PREFIX + sender;
-            return infoKey + index;
-        }
-
-        private static bool Add(string sender, byte[] program, string info)
-        {
-            Runtime.Notify("Start adding");
-            if (!Runtime.CheckWitness(sender.AsByteArray()))
-            {
-                Runtime.Notify("Invalid witness");
-                return false;
-            }
-            
-            BigInteger counter = GetCounter(sender);
-            counter += 1;
-
-            Runtime.Notify("Counter");
-            Runtime.Notify(counter);
-            
-            string key = GetProgramKey(sender, counter);
-            Runtime.Notify("Key");
-            Runtime.Notify(key);
-            Storage.Put(Storage.CurrentContext, key, program);
-
-            PutCounter(sender, counter);
-            PutInfo(sender, counter, info);
-            PutStatus(sender, counter, STATUS.ACTIVE);
-            return true;
-        }
-        
-        private static STATUS GetStatus(string sender, BigInteger counter)
-        {
-            string statusKey = GetStatusKey(sender, counter);
-            byte[] status = Storage.Get(Storage.CurrentContext, statusKey);
-            Runtime.Notify(status[0]);
-            return (STATUS)status[0];
-        }
-
-        private static void PutStatus(string sender, BigInteger counter, STATUS status)
-        {
-            Runtime.Notify("PutStatus");
-            Runtime.Notify(status);
-
-            string statusKey = GetStatusKey(sender, counter);
-            Runtime.Notify(statusKey);
-
-            Storage.Delete(Storage.CurrentContext, statusKey);
-            Storage.Put(Storage.CurrentContext, statusKey, (Int32)status);
-        }
-
-        private static byte[] GetInfo(string sender, BigInteger counter)
-        {
-            Runtime.Notify("GetInfo");
-            string infoKey = GetInfoKey(sender, counter);
-            byte[] info = Storage.Get(Storage.CurrentContext, infoKey);
-            Runtime.Notify(info);
-            return info;
-        }
-
-        private static void PutInfo(string sender, BigInteger counter, string info)
-        {
-            Runtime.Notify("PutInfo");
-            Runtime.Notify(info);
-
-            string infoKey = GetInfoKey(sender, counter);
-            Runtime.Notify(infoKey);
-            
-            Storage.Put(Storage.CurrentContext, infoKey, info);
-        }
-
-        private static void PutCounter(string sender, BigInteger counter)
-        {
-            string counterKey = PROGRAM_COUNTER_PREFIX + sender;
-            Runtime.Notify("Counter key");
-            Runtime.Notify(counterKey);
-            Storage.Put(Storage.CurrentContext, counterKey, counter);
-        }
-
-        private static BigInteger GetCounter(string sender)
-        {
-            string counterKey = PROGRAM_COUNTER_PREFIX + sender;
-            byte[] res = Storage.Get(Storage.CurrentContext, counterKey);
-            return (res.Length == 0) ? 0 : res.AsBigInteger();
-        }
-
-        public static bool Invoke(string sender, BigInteger i, byte[] arg)
-        {
-            if (!Runtime.CheckWitness(sender.AsByteArray()))
+            if (!Runtime.CheckWitness(authorAddress.AsByteArray()))
             {
                 Runtime.Notify("Invalid witness");
                 return false;
             }
 
-            STATUS status = GetStatus(sender, i);
-            if (status != STATUS.ACTIVE)
+            Program program = Program.GetProgram(authorAddress, i);
+            Runtime.Notify(program.Source);
+
+            if (program.Status != Program.STATUS.ACTIVE)
             {
-                Runtime.Notify("Already executeds");
+                Runtime.Notify("Already executed");
                 return false;
             }
+            
+            byte[] source = program.Source;
 
-            string key = GetProgramKey(sender, i);
-
-            byte[] program = Storage.Get(Storage.CurrentContext, key);
-
-            Runtime.Notify(program);
-            if (program == null)
-            {
-                return false;
-            }
-
-            Runtime.Notify(arg);
             Interpreter interpreter = Interpreter.Init();
             interpreter = Interpreter.Run(interpreter, program, arg);
 
+            Program.STATUS status = Program.STATUS.EXECUTION_ERROR;
             if (interpreter.isOk)
             {
-
                 Int32 res = Interpreter.GetResult(interpreter);
-                Runtime.Notify("Result ");
-                Runtime.Notify(res);
-                bool a = res == 1;
-                if (a)
+                
+                bool isConditionOk = res == 1;
+                if (isConditionOk)
                 {
-                    PutStatus(sender, i, STATUS.SUCCESS);
-                    Runtime.Notify("OK");
+                    status = Program.STATUS.SUCCESS;
+                    Runtime.Notify("SUCCESS");
                 }
                 else
                 {
-                    PutStatus(sender, i, STATUS.FAILURE);
-                    Runtime.Notify("HE OK");
+                    status = Program.STATUS.FAILURE;
+                    Runtime.Notify("FAILURE");
                 }
-                return true;
             }
 
-            PutStatus(sender, i, STATUS.EXECUTION_ERROR);
-            Runtime.Notify("HE OK");
-            
-            return true;
+            Program.ChangeStatus(program, authorAddress, status);
+            return status != Program.STATUS.EXECUTION_ERROR;
         }
 
-        /*
-        private static bool AddWithDeposit(string sender, byte[] program, string info, BigInteger deposit, string client)
-        {
-            
-        }
-        */
-
-        //01 0705
-        //testinvoke 0cf75529998137d1bb5baa47f9efc82852a32260 add ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y","000000027ffffffe7fffffff",12]
-        //testinvoke 0cf75529998137d1bb5baa47f9efc82852a32260 add ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y","000000027ffffffe",12]
-        //testinvoke 0cf75529998137d1bb5baa47f9efc82852a32260 invoke ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y",1,b'0000000f']  17
-        //testinvoke 0cf75529998137d1bb5baa47f9efc82852a32260 invoke ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y",1,b'0000000f'] -17
+        //05 0705
+        //testinvoke script_hash add ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y","-26<(x+2)<26",b'000000027ffffffe0000001a7fffffff0000001a7ffffffa']
+        //testinvoke script_hash invoke ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y",1,b'0000000f'] //true
+        //testinvoke script_hash invoke ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y",1,b'0000001a'] //false
         public static object Main(string operation, params object[] args)
         {
             if (operation == "add")
             {
+                Runtime.Notify(((byte[])args[2]).ToInt32(0));
+                Runtime.Notify(((byte[])args[2]).ToInt32(4));
+                Runtime.Notify(((byte[])args[2]).ToInt32(8));
                 Program program = Program.Init((byte[])args[1], (byte[])args[2]);
                 Program.PutProgram(program, (string)args[0]);
             }
             if (operation == "get")
             {
-                Program program = Program.GetProgram((string)args[0], (BigInteger)args[1]);
+                return Program.GetProgram((string)args[0], (BigInteger)args[1]);
             }
-            
-            /*
-            Storage.Put(Storage.CurrentContext, "hello", "world");
-            byte[] res = Storage.Get(Storage.CurrentContext, "hello");
-            Runtime.Notify(res);
-            
-            if (operation == "add")
+            else if (operation == "invoke") 
             {
-                Runtime.Notify("adding program");
-                return Add((string)args[0], (byte[])args[1], (string)args[2]);
-            }
-            if (operation == "addWithDeposit")
-            {
-                
-            }
-            else if (operation == "get")
-            {
-                byte[] info = GetInfo((string)args[0], (BigInteger)args[1]);
-                Runtime.Notify(info);
-                return true;
-            }
-            else if (operation == "invoke")
-            {
-                Runtime.Notify("Start invoking");
-                Runtime.Notify(args[0]);
-                Runtime.Notify(args[1]);
+                Runtime.Notify(((byte[])args[2]).ToInt32(0));
                 return Invoke((string)args[0], (BigInteger)args[1], (byte[])args[2]);
             }
             else if (operation == "mint")
@@ -252,7 +102,6 @@ namespace ElightContract
             {
                 return Token.Decimals();
             }
-            */
             return true;
         }
     }
