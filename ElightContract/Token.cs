@@ -35,11 +35,13 @@ namespace ElightContract
             
             if (value <= 0)
             {
+                Runtime.Notify("Invalid value");
                 return false;
             }
             
             if (from == to)
             {
+                Runtime.Notify("Transfered");
                 return true;
             }
             
@@ -50,9 +52,9 @@ namespace ElightContract
             }
             
             Storage.Put(Storage.CurrentContext, from, fromValue - value);
-            BigInteger to_value = Storage.Get(Storage.CurrentContext, to).AsBigInteger();
-            Storage.Put(Storage.CurrentContext, to, to_value + value);
-            Runtime.Notify("TRANSFERED", from, to, value);
+            BigInteger toValue = Storage.Get(Storage.CurrentContext, to).AsBigInteger();
+            Storage.Put(Storage.CurrentContext, to, toValue + value);
+            Runtime.Notify("Transfered");
             return true;
         }
 
@@ -60,12 +62,15 @@ namespace ElightContract
         {
             if (from == to)
             {
+                Runtime.Notify("Transfer was forced");
                 return true;
             }
-
+            
             BigInteger contribution = Storage.Get(Storage.CurrentContext, from).AsBigInteger();
             Storage.Delete(Storage.CurrentContext, from);
-            Storage.Put(Storage.CurrentContext, to, contribution);
+            BigInteger toValue = Storage.Get(Storage.CurrentContext, to).AsBigInteger();
+            Storage.Put(Storage.CurrentContext, to, toValue + contribution);
+            Runtime.Notify("Transfer was forced");
             return true;
         }
 
@@ -122,7 +127,6 @@ namespace ElightContract
         public static BigInteger BalanceOf(byte[] address)
         {
             BigInteger currentBalance = Storage.Get(Storage.CurrentContext, address).AsBigInteger();
-            Runtime.Notify("BalanceOf() currentBalance", currentBalance);
             return currentBalance;
         }
 

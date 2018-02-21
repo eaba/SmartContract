@@ -48,10 +48,10 @@ namespace ElightContract
             return true;
         }
 
-        public static bool Unfreeze(Deposit deposit, bool isFailure)
+        public static bool Unfreeze(Deposit deposit, bool isOk)
         {
             byte[] agent = GetAgentAddress(deposit);
-            byte[] receiver = isFailure ? deposit.ClientHash : deposit.СarrierHash;
+            byte[] receiver = isOk ? deposit.СarrierHash : deposit.ClientHash;
             Token.ForceTransfer(agent, receiver);
             return true;
         }

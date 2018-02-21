@@ -8,15 +8,15 @@ namespace ElightContract
 {
     public class Elight : SmartContract
     {
-        public static bool Invoke(string authorAddress, BigInteger i, byte[] arg)
+        public static bool Invoke(string carrierHash, BigInteger i, byte[] arg)
         {
-            if (!Runtime.CheckWitness(authorAddress.AsByteArray()))
+            if (!Runtime.CheckWitness(carrierHash.AsByteArray()))
             {
                 Runtime.Notify("Invalid witness");
                 return false;
             }
 
-            Contract contract = Contract.GetContract(authorAddress, i);
+            Contract contract = Contract.GetContract(carrierHash, i);
             Runtime.Notify(contract.Conditions);
             Runtime.Notify("With deposit?");
             Runtime.Notify(contract.ContractOption == Contract.Option.WithDeposit);
@@ -55,7 +55,7 @@ namespace ElightContract
                 }
             }
 
-            Contract.ChangeStatus(contract, authorAddress, status);
+            Contract.ChangeStatus(contract, carrierHash, status);
             return status != Contract.STATUS.EXECUTION_ERROR;
         }
         
@@ -70,18 +70,17 @@ namespace ElightContract
             {
                 Contract contract = Contract.Init((byte[])args[1], (byte[])args[2]);
                 Contract.PutContract(contract, (string)args[0]);
+                return true;
             }
             if (operation == "initDeposit")
             {
                 Contract contract = Contract.Init((byte[])args[1], (byte[])args[2]);
-                Contract.InitDeposit(contract, (byte[])args[1], (byte[])args[2], (BigInteger)args[3]);
+                contract = Contract.InitDeposit(contract, (byte[])args[0], (byte[])args[3], (BigInteger)args[4]);
                 Contract.PutContract(contract, (string)args[0]);
+                return true;
             }
             else if (operation == "invoke") 
             {
-                Runtime.Notify(args[0]);
-                Runtime.Notify(args[1]);
-                Runtime.Notify(args[2]);
                 return Invoke((string)args[0], (BigInteger)args[1], (byte[])args[2]);
             }
             else if (operation == "mint")
@@ -90,10 +89,7 @@ namespace ElightContract
             }
             else if (operation == "transfer")
             {
-                byte[] from = (byte[])args[0];
-                byte[] to = (byte[])args[1];
-                BigInteger value = (BigInteger)args[2];
-                return Token.Transfer(from, to, value);
+                return Token.Transfer((byte[])args[0], (byte[])args[1], (BigInteger)args[2]);
             }
             else if (operation == "name")
             {
@@ -115,7 +111,8 @@ namespace ElightContract
             {
                 return Token.Decimals();
             }
-            return true;
+
+            return false;
         }
     }
 }

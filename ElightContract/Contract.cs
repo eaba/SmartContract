@@ -27,27 +27,27 @@ namespace ElightContract
         public Deposit Deposit;
         public Option ContractOption;
 
-        private static string GetContractKey(string authorAddress, BigInteger index)
+        private static string GetContractKey(string carrierHash, BigInteger index)
         {
-            string main = Prefixes.CONTRACT_PREFIX + authorAddress;
+            string main = Prefixes.CONTRACT_PREFIX + carrierHash;
             return main + index;
         }
 
-        private static string GetContractCounterKey(string authorAddress)
+        private static string GetContractCounterKey(string carrierHash)
         {
-            return Prefixes.CONTRACT_COUNTER_PREFIX + authorAddress;
+            return Prefixes.CONTRACT_COUNTER_PREFIX + carrierHash;
         }
 
-        private static BigInteger GetContractCounter(string authorAddress)
+        private static BigInteger GetContractCounter(string carrierHash)
         {
-            string contractCounterKey = GetContractCounterKey(authorAddress);
+            string contractCounterKey = GetContractCounterKey(carrierHash);
             byte[] contractCounter = Storage.Get(Storage.CurrentContext, contractCounterKey);
             return (contractCounter.Length == 0) ? 0 : contractCounter.AsBigInteger();
         }
 
-        private static void PutContractCounter(string authorAddress, BigInteger contractCounter)
+        private static void PutContractCounter(string carrierHash, BigInteger contractCounter)
         {
-            string contractCounterKey = GetContractCounterKey(authorAddress);
+            string contractCounterKey = GetContractCounterKey(carrierHash);
             Storage.Put(Storage.CurrentContext, contractCounterKey, contractCounter);
         }
 
@@ -76,9 +76,9 @@ namespace ElightContract
             };
         }
 
-        public static Contract GetContract(string authorAddress, BigInteger index)
+        public static Contract GetContract(string carrierHash, BigInteger index)
         {
-            string contractKey = GetContractKey(authorAddress, index);
+            string contractKey = GetContractKey(carrierHash, index);
             byte[] contract = Storage.Get(Storage.CurrentContext, contractKey);
             Runtime.Notify(contract);
             Runtime.Notify("Contract");
@@ -87,22 +87,22 @@ namespace ElightContract
         }
         
         //store contract in blockchain 
-        public static bool PutContract(Contract contract, string authorAddress)
+        public static bool PutContract(Contract contract, string carrierHash)
         {
             Runtime.Notify("PutContract");
-            if (!Runtime.CheckWitness(authorAddress.AsByteArray()))
+            if (!Runtime.CheckWitness(carrierHash.AsByteArray()))
             {
                 Runtime.Notify("Invalid witness");
                 return false;
             }
 
-            BigInteger contractCounter = GetContractCounter(authorAddress);
+            BigInteger contractCounter = GetContractCounter(carrierHash);
             contractCounter += 1;
             Runtime.Notify("Counter");
             Runtime.Notify(contractCounter);
 
-            string contractCounterKey = GetContractCounterKey(authorAddress);
-            string contractKey = GetContractKey(authorAddress, contractCounter);
+            string contractCounterKey = GetContractCounterKey(carrierHash);
+            string contractKey = GetContractKey(carrierHash, contractCounter);
             Runtime.Notify(contractCounterKey);
             Runtime.Notify(contractKey);
 
@@ -111,21 +111,21 @@ namespace ElightContract
             return true;
         }
         
-        private static bool UpdateContract(Contract contract, string authorAddress)
+        private static bool UpdateContract(Contract contract, string carrierHash)
         {
             Runtime.Notify("UpdateContract");
-            if (!Runtime.CheckWitness(authorAddress.AsByteArray()))
+            if (!Runtime.CheckWitness(carrierHash.AsByteArray()))
             {
                 Runtime.Notify("Invalid witness");
                 return false;
             }
 
-            BigInteger contractCounter = GetContractCounter(authorAddress);
+            BigInteger contractCounter = GetContractCounter(carrierHash);
             Runtime.Notify("Counter");
             Runtime.Notify(contractCounter);
 
-            string contractCounterKey = GetContractCounterKey(authorAddress);
-            string contractKey = GetContractKey(authorAddress, contractCounter);
+            string contractCounterKey = GetContractCounterKey(carrierHash);
+            string contractKey = GetContractKey(carrierHash, contractCounter);
             Runtime.Notify(contractCounterKey);
             Runtime.Notify(contractKey);
 
@@ -134,11 +134,11 @@ namespace ElightContract
         }
 
         //after a propgram has been executed, its status should be changed
-        public static Contract ChangeStatus(Contract contract, string authorAddress, STATUS status)
+        public static Contract ChangeStatus(Contract contract, string carrierHash, STATUS status)
         {
             contract.Status = status;
-            BigInteger contractCounter = GetContractCounter(authorAddress);
-            string contractKey = GetContractKey(authorAddress, contractCounter);
+            BigInteger contractCounter = GetContractCounter(carrierHash);
+            string contractKey = GetContractKey(carrierHash, contractCounter);
             Storage.Put(Storage.CurrentContext, contractKey, (byte[])contract);
             return contract;
         }
@@ -158,7 +158,7 @@ namespace ElightContract
 
             if (contract.ContractOption == Option.WithDeposit)
             {
-                res.Concat((byte[])contract.Deposit);
+                res = res.Concat((byte[])contract.Deposit);
             }
             return res;
         }
