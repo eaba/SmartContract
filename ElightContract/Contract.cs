@@ -1,114 +1,212 @@
 ﻿using Neo.SmartContract.Framework;
 using Neo.SmartContract.Framework.Services.Neo;
-using Neo.SmartContract.Framework.Services.System;
 using System;
 using System.Numerics;
 
 namespace ElightContract
 {
-    public class ElightSmartContract : SmartContract
+    public struct Contract
     {
-        public static bool Invoke(string authorAddress, BigInteger i, byte[] arg)
+        public enum Option
         {
+            WithoutDeposit = 0,
+            WithDeposit = 1
+        }
+
+        public enum STATUS
+        {
+            ACTIVE = 0,       //hasn't been executed yet
+            SUCCESS,          //has been executed, result lays in specified borders
+            FAILURE,          //has been executed, result doesn't in specified borders
+            EXECUTION_ERROR   //has executed with errors
+        }
+
+        public STATUS Status;
+        public byte[] Info;       //additional data, for example, author, description etc
+        public byte[] Conditions; //byte code for interpreter
+        public Deposit Deposit;
+        public Option ContractOption;
+
+        private static string GetContractKey(string authorAddress, BigInteger index)
+        {
+            string main = Prefixes.CONTRACT_PREFIX + authorAddress;
+            return main + index;
+        }
+
+        private static string GetContractCounterKey(string authorAddress)
+        {
+            return Prefixes.CONTRACT_COUNTER_PREFIX + authorAddress;
+        }
+
+        private static BigInteger GetContractCounter(string authorAddress)
+        {
+            string contractCounterKey = GetContractCounterKey(authorAddress);
+            byte[] contractCounter = Storage.Get(Storage.CurrentContext, contractCounterKey);
+            return (contractCounter.Length == 0) ? 0 : contractCounter.AsBigInteger();
+        }
+
+        private static void PutContractCounter(string authorAddress, BigInteger contractCounter)
+        {
+            string contractCounterKey = GetContractCounterKey(authorAddress);
+            Storage.Put(Storage.CurrentContext, contractCounterKey, contractCounter);
+        }
+
+        public static Contract InitDeposit(Contract contract, byte[] carrierHash, 
+            byte[] clientHash, BigInteger contribution)
+        {
+            contract.Deposit = Deposit.Init(carrierHash, clientHash);
+            
+            if (Deposit.Freeze(contract.Deposit, contribution))
+            {
+                //deposit has been assigned successfuly
+                contract.ContractOption = Option.WithDeposit;
+            }
+
+            return contract;
+        }
+
+        public static Contract Init(byte[] info, byte[] source)
+        {
+            return new Contract
+            {
+                Conditions = source,
+                Status = STATUS.ACTIVE,
+                Info = info,
+                ContractOption = Option.WithoutDeposit
+            };
+        }
+
+        public static Contract GetContract(string authorAddress, BigInteger index)
+        {
+            string contractKey = GetContractKey(authorAddress, index);
+            byte[] contract = Storage.Get(Storage.CurrentContext, contractKey);
+            Runtime.Notify(contract);
+            Runtime.Notify("Contract");
+
+            return (Contract)contract;
+        }
+        
+        //store contract in blockchain 
+        public static bool PutContract(Contract contract, string authorAddress)
+        {
+            Runtime.Notify("PutContract");
             if (!Runtime.CheckWitness(authorAddress.AsByteArray()))
             {
                 Runtime.Notify("Invalid witness");
                 return false;
             }
 
-            Contract program = Contract.GetProgram(authorAddress, i);
-            Runtime.Notify(program.Conditions);
+            BigInteger contractCounter = GetContractCounter(authorAddress);
+            contractCounter += 1;
+            Runtime.Notify("Counter");
+            Runtime.Notify(contractCounter);
 
-            if (program.Status != Contract.STATUS.ACTIVE)
+            string contractCounterKey = GetContractCounterKey(authorAddress);
+            string contractKey = GetContractKey(authorAddress, contractCounter);
+            Runtime.Notify(contractCounterKey);
+            Runtime.Notify(contractKey);
+
+            Storage.Put(Storage.CurrentContext, contractCounterKey, contractCounter);
+            Storage.Put(Storage.CurrentContext, contractKey, (byte[])contract);
+            return true;
+        }
+        
+        private static bool UpdateContract(Contract contract, string authorAddress)
+        {
+            Runtime.Notify("UpdateContract");
+            if (!Runtime.CheckWitness(authorAddress.AsByteArray()))
             {
-                Runtime.Notify("Already executed");
+                Runtime.Notify("Invalid witness");
                 return false;
             }
-            
-            byte[] source = program.Conditions;
 
-            Interpreter interpreter = Interpreter.Init();
-            interpreter = Interpreter.Run(interpreter, program, arg);
+            BigInteger contractCounter = GetContractCounter(authorAddress);
+            Runtime.Notify("Counter");
+            Runtime.Notify(contractCounter);
 
-            Contract.STATUS status = Contract.STATUS.EXECUTION_ERROR;
-            if (interpreter.isOk)
-            {
-                Int32 res = Interpreter.GetResult(interpreter);
-                
-                bool isConditionOk = res == 1;
-                if (isConditionOk)
-                {
-                    status = Contract.STATUS.SUCCESS;
-                    Runtime.Notify("SUCCESS");
-                }
-                else
-                {
-                    status = Contract.STATUS.FAILURE;
-                    Runtime.Notify("FAILURE");
-                }
-            }
+            string contractCounterKey = GetContractCounterKey(authorAddress);
+            string contractKey = GetContractKey(authorAddress, contractCounter);
+            Runtime.Notify(contractCounterKey);
+            Runtime.Notify(contractKey);
 
-            Contract.ChangeStatus(program, authorAddress, status);
-            return status != Contract.STATUS.EXECUTION_ERROR;
+            Storage.Put(Storage.CurrentContext, contractCounterKey, contractCounter);
+            return true;
         }
 
-        //05 0705
-        //testinvoke script_hash add ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y","-26<(x+2)<26",b'000000027ffffffe0000001a7fffffff0000001a7ffffffa']
-        //testinvoke script_hash invoke ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y",1,b'0000000f'] //true
-        //testinvoke script_hash invoke ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y",1,b'0000001a'] //false
-        public static object Main(string operation, params object[] args)
+        //after a propgram has been executed, its status should be changed
+        public static Contract ChangeStatus(Contract contract, string authorAddress, STATUS status)
         {
-            if (operation == "add")
-            {
-                Runtime.Notify(args[0]);
-                Runtime.Notify(args[1]);
-                Runtime.Notify(args[2]);
+            contract.Status = status;
+            BigInteger contractCounter = GetContractCounter(authorAddress);
+            string contractKey = GetContractKey(authorAddress, contractCounter);
+            Storage.Put(Storage.CurrentContext, contractKey, (byte[])contract);
+            return contract;
+        }
 
-                Runtime.Notify(((byte[])args[2]).ToInt32(0));
-                Runtime.Notify(((byte[])args[2]).ToInt32(4));
-                Runtime.Notify(((byte[])args[2]).ToInt32(8));
-                Contract program = Contract.Init((byte[])args[1], (byte[])args[2]);
-                Contract.PutProgram(program, (string)args[0]);
-            }
-            if (operation == "get")
+        //Type conversations to make possible to store Contract structure in blockchain
+        //[STATUS][INFO LENGTH][INFO DATA][SRC LENGTH][SRC DATA]
+        //[4 byte][  4 bytes  ][ arbitary][ 4 bytes  ][arbitary]
+        public static explicit operator byte[] (Contract contract)
+        {
+            BigInteger status = ((Int32)contract.Status);
+            byte[] res = ((Int32)contract.Status).ToByteArray()
+                .Concat(contract.Info.Length.ToByteArray())
+                .Concat(contract.Info)
+                .Concat(contract.Conditions.Length.ToByteArray())
+                .Concat(contract.Conditions)
+                .Concat(((Int32)contract.ContractOption).ToByteArray());
+
+            if (contract.ContractOption == Option.WithDeposit)
             {
-                return Contract.GetProgram((string)args[0], (BigInteger)args[1]);
+                res.Concat((byte[])contract.Deposit);
             }
-            else if (operation == "invoke") 
+            return res;
+        }
+
+        //[STATUS][INFO LENGTH][INFO DATA][SRC LENGTH][SRC DATA][ Deposit ]
+        //[4 byte][  4 bytes  ][ arbitary][ 4 bytes  ][arbitary][ 40 bytes]
+        public static explicit operator Contract(byte[] ba)
+        {
+            Int32 index = 0;
+            STATUS status = (STATUS)ba.ToInt32(index, false);
+            Runtime.Notify(status);
+
+            index += 4;
+            Int32 infoLen = ba.ToInt32(index, false);
+            Runtime.Notify(infoLen);
+
+            index += 4;
+            byte[] info = ba.Range(index, infoLen);
+            Runtime.Notify(info);
+
+            index += infoLen;
+            Int32 sourceLen = ba.ToInt32(index, false);
+            Runtime.Notify(sourceLen);
+
+            index += 4;
+            byte[] source = ba.Range(index, sourceLen);
+            Runtime.Notify(source);
+
+            index += sourceLen;
+            Option contractOption = (Option)ba.ToInt32(index, false);
+            Runtime.Notify(contractOption);
+
+            Contract contract = new Contract
             {
-                Runtime.Notify(args[0]);
-                Runtime.Notify(args[1]);
-                Runtime.Notify(args[2]);
-                return Invoke((string)args[0], (BigInteger)args[1], (byte[])args[2]);
-            }
-            else if (operation == "mint")
+                Status = status,
+                Conditions = source,
+                Info = info,
+                ContractOption = contractOption,
+            };
+
+            if (contractOption == Option.WithDeposit)
             {
-                return Token.MintTokens();
+                index += 4;
+                Deposit deposit = (Deposit)ba.Range(index, Deposit.DepositSize);
+                contract.Deposit = deposit;
             }
-            else if (operation == "transfer")
-            {
-                string from = (string)args[0];
-                string to = (string)args[1];
-                BigInteger value = (BigInteger)args[2];
-                return Token.Transfer(from, to, value);
-            }
-            else if (operation == "name")
-            {
-                return Token.Name();
-            }
-            else if (operation == "symbol")
-            {
-                return Token.Symbol();
-            }
-            else if (operation == "total")
-            {
-                return Token.TotalSupply();
-            }
-            else if (operation == "decimals")
-            {
-                return Token.Decimals();
-            }
-            return true;
+
+            return contract;
         }
     }
 }

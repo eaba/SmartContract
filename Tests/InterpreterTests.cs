@@ -32,12 +32,12 @@ namespace Tests
                 0x00, 0x00, 0x00, 0x1A, //26
                 0x7F, 0xFF, 0xFF, 0xFA, //CMP
             };
-            Contract program1 = new Contract
+            Contract contract1 = new Contract
             {
                 Conditions = src1
             };
 
-            interpreter = Interpreter.Run(interpreter, program1, arg1);
+            interpreter = Interpreter.Run(interpreter, contract1, arg1);
             Assert.IsTrue(interpreter.isOk);
             Assert.AreEqual(1, Interpreter.GetResult(interpreter));
 
@@ -53,13 +53,13 @@ namespace Tests
                 0x7F, 0xFF, 0xFF, 0xFA, //CMP
             };
 
-            Contract program2 = new Contract
+            Contract contract2 = new Contract
             {
                 Conditions = src2
             };
 
             interpreter = Interpreter.Init();
-            interpreter = Interpreter.Run(interpreter, program2, arg2);
+            interpreter = Interpreter.Run(interpreter, contract2, arg2);
             Assert.IsTrue(interpreter.isOk);
             Assert.AreEqual(-1, Interpreter.GetResult(interpreter));
 
@@ -75,12 +75,12 @@ namespace Tests
                 0x7F, 0xFF, 0xFF, 0xFA, //CMP
             };
 
-            Contract program3 = new Contract
+            Contract contract3 = new Contract
             {
                 Conditions = src3
             };
             interpreter = Interpreter.Init();
-            interpreter = Interpreter.Run(interpreter, program3, arg3);
+            interpreter = Interpreter.Run(interpreter, contract3, arg3);
             Assert.IsTrue(interpreter.isOk);
             Assert.AreEqual(-1, Interpreter.GetResult(interpreter));
             

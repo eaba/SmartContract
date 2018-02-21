@@ -25,10 +25,11 @@ namespace ElightContract
         };
         private const UInt64 SwapRate = 10;
         
-        public static bool Transfer(string from, string to, BigInteger value)
+        public static bool Transfer(byte[] from, byte[] to, BigInteger value)
         {
-            if (!Runtime.CheckWitness(from.AsByteArray()))
+            if (!Runtime.CheckWitness(from))
             {
+                Runtime.Notify("Invalid witness");
                 return false;
             }
             
@@ -42,17 +43,29 @@ namespace ElightContract
                 return true;
             }
             
-            BigInteger from_value = Storage.Get(Storage.CurrentContext, from).AsBigInteger();
-
-            if (from_value < value)
+            BigInteger fromValue = Storage.Get(Storage.CurrentContext, from).AsBigInteger();
+            if (fromValue < value)
             {
                 return false;
             }
             
-            Storage.Put(Storage.CurrentContext, from, from_value - value);
+            Storage.Put(Storage.CurrentContext, from, fromValue - value);
             BigInteger to_value = Storage.Get(Storage.CurrentContext, to).AsBigInteger();
             Storage.Put(Storage.CurrentContext, to, to_value + value);
             Runtime.Notify("TRANSFERED", from, to, value);
+            return true;
+        }
+
+        public static bool ForceTransfer(byte[] from, byte[] to)
+        {
+            if (from == to)
+            {
+                return true;
+            }
+
+            BigInteger contribution = Storage.Get(Storage.CurrentContext, from).AsBigInteger();
+            Storage.Delete(Storage.CurrentContext, from);
+            Storage.Put(Storage.CurrentContext, to, contribution);
             return true;
         }
 

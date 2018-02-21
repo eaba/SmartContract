@@ -26,7 +26,7 @@ namespace ElightContract
         public const Int32 kRegistersAmount = 1;
         public Int32[] registers;
         public Stack stack;
-        public bool isOk;  //whether interpreter executed a program without errors
+        public bool isOk;  //whether interpreter executed a contract without errors
 
         public static Interpreter Init()
         {
@@ -49,7 +49,7 @@ namespace ElightContract
             return Stack.Top(Interpreter.stack);
         }
         
-        public static Interpreter Run(Interpreter interpreter, Contract program, byte[] arg)
+        public static Interpreter Run(Interpreter interpreter, Contract contract, byte[] arg)
         {
             //add arguments
             Int32 counter = 0;
@@ -65,12 +65,12 @@ namespace ElightContract
                 return interpreter;
             }
 
-            //run program with specified arguments
+            //run contract with specified arguments
             counter = 0;
             Int32 value = 0;
-            while (counter < program.Conditions.Length)
+            while (counter < contract.Conditions.Length)
             {
-                value = program.Conditions.ToInt32(counter);
+                value = contract.Conditions.ToInt32(counter);
                 counter += 4;
 
                 Int32 a = 0;
@@ -128,7 +128,7 @@ namespace ElightContract
                 }
             }
             
-            interpreter.isOk = interpreter.stack.i == 0 & counter == program.Conditions.Length;
+            interpreter.isOk = interpreter.stack.i == 0 & counter == contract.Conditions.Length;
             return interpreter;
         }
     }

@@ -10,7 +10,7 @@ namespace ElightContract
     //are very hard to debug, especially in case of smart-contarcts
     public static class Prefixes
     {
-        public const string PROGRAM_PREFIX = "PP";          
-        public const string PROGRAM_COUNTER_PREFIX = "PC"; 
+        public const string CONTRACT_PREFIX = "PP";          
+        public const string CONTRACT_COUNTER_PREFIX = "PC"; 
     }
 }
