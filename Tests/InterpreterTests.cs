@@ -32,9 +32,9 @@ namespace Tests
                 0x00, 0x00, 0x00, 0x1A, //26
                 0x7F, 0xFF, 0xFF, 0xFA, //CMP
             };
-            Program program1 = new Program
+            Contract program1 = new Contract
             {
-                Source = src1
+                Conditions = src1
             };
 
             interpreter = Interpreter.Run(interpreter, program1, arg1);
@@ -53,9 +53,9 @@ namespace Tests
                 0x7F, 0xFF, 0xFF, 0xFA, //CMP
             };
 
-            Program program2 = new Program
+            Contract program2 = new Contract
             {
-                Source = src2
+                Conditions = src2
             };
 
             interpreter = Interpreter.Init();
@@ -75,9 +75,9 @@ namespace Tests
                 0x7F, 0xFF, 0xFF, 0xFA, //CMP
             };
 
-            Program program3 = new Program
+            Contract program3 = new Contract
             {
-                Source = src3
+                Conditions = src3
             };
             interpreter = Interpreter.Init();
             interpreter = Interpreter.Run(interpreter, program3, arg3);

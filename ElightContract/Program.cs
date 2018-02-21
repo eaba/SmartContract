@@ -5,7 +5,7 @@ using System.Numerics;
 
 namespace ElightContract
 {
-    public struct Program
+    public struct Contract
     {
         public enum STATUS
         {
@@ -17,7 +17,7 @@ namespace ElightContract
 
         public STATUS Status;
         public byte[] Info;   //additional data, for example, author, description etc
-        public byte[] Source; //byte code for interpreter
+        public byte[] Conditions; //byte code for interpreter
 
         private static string GetProgramKey(string authorAddress, BigInteger index)
         {
@@ -43,28 +43,28 @@ namespace ElightContract
             Storage.Put(Storage.CurrentContext, programCounterKey, programCounter);
         }
 
-        public static Program Init(byte[] info, byte[] source)
+        public static Contract Init(byte[] info, byte[] source)
         {
-            return new Program
+            return new Contract
             {
-                Source = source,
+                Conditions = source,
                 Status = STATUS.ACTIVE,
                 Info = info
             };
         }
 
-        public static Program GetProgram(string authorAddress, BigInteger index)
+        public static Contract GetProgram(string authorAddress, BigInteger index)
         {
             string programKey = GetProgramKey(authorAddress, index);
             byte[] program = Storage.Get(Storage.CurrentContext, programKey);
             Runtime.Notify(program);
-            Runtime.Notify("Program");
+            Runtime.Notify("Contract");
 
-            return (Program)program;
+            return (Contract)program;
         }
 
         //store program in blockchain 
-        public static bool PutProgram(Program program, string authorAddress)
+        public static bool PutProgram(Contract program, string authorAddress)
         {
             Runtime.Notify("PutProgram");
             if (!Runtime.CheckWitness(authorAddress.AsByteArray()))
@@ -88,7 +88,7 @@ namespace ElightContract
             return true;
         }
         
-        private static bool UpdateProgram(Program program, string authorAddress)
+        private static bool UpdateProgram(Contract program, string authorAddress)
         {
             Runtime.Notify("UpdateProgram");
             if (!Runtime.CheckWitness(authorAddress.AsByteArray()))
@@ -111,7 +111,7 @@ namespace ElightContract
         }
 
         //after a propgram has been executed, its status should be changed
-        public static Program ChangeStatus(Program program, string authorAddress, STATUS status)
+        public static Contract ChangeStatus(Contract program, string authorAddress, STATUS status)
         {
             program.Status = status;
             BigInteger programCounter = GetProgramCounter(authorAddress);
@@ -120,24 +120,24 @@ namespace ElightContract
             return program;
         }
 
-        //Type conversations to make possible to store Program structure in blockchain
+        //Type conversations to make possible to store Contract structure in blockchain
         //[STATUS][INFO LENGTH][INFO DATA][SRC LENGTH][SRC DATA]
         //[4 byte][  4 bytes  ][ arbitary][ 4 bytes  ][arbitary]
-        public static explicit operator byte[] (Program program)
+        public static explicit operator byte[] (Contract program)
         {
             BigInteger status = ((Int32)program.Status);
             byte[] res = ((Int32)program.Status).ToByteArray()
                 .Concat(program.Info.Length.ToByteArray())
                 .Concat(program.Info)
-                .Concat(program.Source.Length.ToByteArray())
-                .Concat(program.Source);
+                .Concat(program.Conditions.Length.ToByteArray())
+                .Concat(program.Conditions);
             
             return res;
         }
 
         //[STATUS][INFO LENGTH][INFO DATA][SRC LENGTH][SRC DATA]
         //[4 byte][  4 bytes  ][ arbitary][ 4 bytes  ][arbitary]
-        public static explicit operator Program(byte[] ba)
+        public static explicit operator Contract(byte[] ba)
         {
             Int32 index = 0;
             STATUS status = (STATUS)ba.ToInt32(index, false);
@@ -159,10 +159,10 @@ namespace ElightContract
             byte[] source = ba.Range(index, sourceLen);
             Runtime.Notify(source);
 
-            return new Program
+            return new Contract
             {
                 Status = status,
-                Source = source,
+                Conditions = source,
                 Info = info
             };
         }

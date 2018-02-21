@@ -6,7 +6,7 @@ using System.Numerics;
 
 namespace ElightContract
 {
-    public class Contract : SmartContract
+    public class ElightSmartContract : SmartContract
     {
         public static bool Invoke(string authorAddress, BigInteger i, byte[] arg)
         {
@@ -16,21 +16,21 @@ namespace ElightContract
                 return false;
             }
 
-            Program program = Program.GetProgram(authorAddress, i);
-            Runtime.Notify(program.Source);
+            Contract program = Contract.GetProgram(authorAddress, i);
+            Runtime.Notify(program.Conditions);
 
-            if (program.Status != Program.STATUS.ACTIVE)
+            if (program.Status != Contract.STATUS.ACTIVE)
             {
                 Runtime.Notify("Already executed");
                 return false;
             }
             
-            byte[] source = program.Source;
+            byte[] source = program.Conditions;
 
             Interpreter interpreter = Interpreter.Init();
             interpreter = Interpreter.Run(interpreter, program, arg);
 
-            Program.STATUS status = Program.STATUS.EXECUTION_ERROR;
+            Contract.STATUS status = Contract.STATUS.EXECUTION_ERROR;
             if (interpreter.isOk)
             {
                 Int32 res = Interpreter.GetResult(interpreter);
@@ -38,18 +38,18 @@ namespace ElightContract
                 bool isConditionOk = res == 1;
                 if (isConditionOk)
                 {
-                    status = Program.STATUS.SUCCESS;
+                    status = Contract.STATUS.SUCCESS;
                     Runtime.Notify("SUCCESS");
                 }
                 else
                 {
-                    status = Program.STATUS.FAILURE;
+                    status = Contract.STATUS.FAILURE;
                     Runtime.Notify("FAILURE");
                 }
             }
 
-            Program.ChangeStatus(program, authorAddress, status);
-            return status != Program.STATUS.EXECUTION_ERROR;
+            Contract.ChangeStatus(program, authorAddress, status);
+            return status != Contract.STATUS.EXECUTION_ERROR;
         }
 
         //05 0705
@@ -67,12 +67,12 @@ namespace ElightContract
                 Runtime.Notify(((byte[])args[2]).ToInt32(0));
                 Runtime.Notify(((byte[])args[2]).ToInt32(4));
                 Runtime.Notify(((byte[])args[2]).ToInt32(8));
-                Program program = Program.Init((byte[])args[1], (byte[])args[2]);
-                Program.PutProgram(program, (string)args[0]);
+                Contract program = Contract.Init((byte[])args[1], (byte[])args[2]);
+                Contract.PutProgram(program, (string)args[0]);
             }
             if (operation == "get")
             {
-                return Program.GetProgram((string)args[0], (BigInteger)args[1]);
+                return Contract.GetProgram((string)args[0], (BigInteger)args[1]);
             }
             else if (operation == "invoke") 
             {
