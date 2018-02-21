@@ -14,7 +14,7 @@ namespace ElightContract
             SUCCESS,
             FAILURE,
             EXECUTION_ERROR
-        }
+        } 
         private static char PROGRAM_PREFIX => 'P';
         private static char PROGRAM_COUNTER_PREFIX => 'C';
         private static char PROGRAM_STATUS_PREFIX => 'S';
@@ -143,14 +143,14 @@ namespace ElightContract
             {
                 return false;
             }
-            
+
             Runtime.Notify(arg);
             Interpreter interpreter = Interpreter.Init();
             interpreter = Interpreter.Run(interpreter, program, arg);
 
             if (interpreter.isOk)
             {
-                
+
                 Int32 res = Interpreter.GetResult(interpreter);
                 Runtime.Notify("Result ");
                 Runtime.Notify(res);
@@ -159,7 +159,8 @@ namespace ElightContract
                 {
                     PutStatus(sender, i, STATUS.SUCCESS);
                     Runtime.Notify("OK");
-                } else
+                }
+                else
                 {
                     PutStatus(sender, i, STATUS.FAILURE);
                     Runtime.Notify("HE OK");
@@ -169,9 +170,16 @@ namespace ElightContract
 
             PutStatus(sender, i, STATUS.EXECUTION_ERROR);
             Runtime.Notify("HE OK");
-
+            
             return true;
         }
+
+        /*
+        private static bool AddWithDeposit(string sender, byte[] program, string info, BigInteger deposit, string client)
+        {
+            
+        }
+        */
 
         //01 0705
         //testinvoke 0cf75529998137d1bb5baa47f9efc82852a32260 add ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y","000000027ffffffe7fffffff",12]
@@ -180,6 +188,17 @@ namespace ElightContract
         //testinvoke 0cf75529998137d1bb5baa47f9efc82852a32260 invoke ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y",1,b'0000000f'] -17
         public static object Main(string operation, params object[] args)
         {
+            if (operation == "add")
+            {
+                Program program = Program.Init((byte[])args[1], (byte[])args[2]);
+                Program.PutProgram(program, (string)args[0]);
+            }
+            if (operation == "get")
+            {
+                Program program = Program.GetProgram((string)args[0], (BigInteger)args[1]);
+            }
+            
+            /*
             Storage.Put(Storage.CurrentContext, "hello", "world");
             byte[] res = Storage.Get(Storage.CurrentContext, "hello");
             Runtime.Notify(res);
@@ -188,6 +207,10 @@ namespace ElightContract
             {
                 Runtime.Notify("adding program");
                 return Add((string)args[0], (byte[])args[1], (string)args[2]);
+            }
+            if (operation == "addWithDeposit")
+            {
+                
             }
             else if (operation == "get")
             {
@@ -229,7 +252,7 @@ namespace ElightContract
             {
                 return Token.Decimals();
             }
-            
+            */
             return true;
         }
     }
