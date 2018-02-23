@@ -134,11 +134,10 @@ namespace ElightContract
         }
 
         //after a propgram has been executed, its status should be changed
-        public static Contract ChangeStatus(Contract contract, string carrierHash, STATUS status)
+        public static Contract ChangeStatus(Contract contract, BigInteger i, string carrierHash, STATUS status)
         {
             contract.Status = status;
-            BigInteger contractCounter = GetContractCounter(carrierHash);
-            string contractKey = GetContractKey(carrierHash, contractCounter);
+            string contractKey = GetContractKey(carrierHash, i);
             Storage.Put(Storage.CurrentContext, contractKey, (byte[])contract);
             return contract;
         }

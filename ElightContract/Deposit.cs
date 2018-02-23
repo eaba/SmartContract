@@ -59,7 +59,7 @@ namespace ElightContract
             return true;
         }
         
-        //hash is contant, so we doesn't need to allocate additional memory to store byte array length
+        //hash is constant, so we doesn't need to allocate additional memory to store byte array length
         //[СarrierHash][ClientHash]
         //[  20 bytes ][ 20 bytes ]
         public static explicit operator byte[] (Deposit deposit)

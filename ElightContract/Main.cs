@@ -55,7 +55,7 @@ namespace ElightContract
                 }
             }
 
-            Contract.ChangeStatus(contract, carrierHash, status);
+            Contract.ChangeStatus(contract, i, carrierHash, status);
             return status != Contract.STATUS.EXECUTION_ERROR;
         }
 
