@@ -46,16 +46,27 @@ namespace ElightContract
                 return false;
             }
 
-            byte[] agent = GetAgentAddress(deposit);
-            Token.Transfer(deposit.СarrierHash, agent, deposit.Amount);
+            //byte[] agent = GetAgentAddress(deposit);
+
+            Token.ForceSub(deposit.СarrierHash, deposit.Amount);
+            /*
+            if (Token.BalanceOf(agent) != null && Token.BalanceOf(agent) != 0)
+            {
+                Runtime.Notify("There is already one deposit with this client");
+                return false;
+            }
+            */
+            //Token.Transfer(deposit.СarrierHash, agent, deposit.Amount);
             return true;
         }
 
         public static bool Unfreeze(Deposit deposit, bool isOk)
         {
-            byte[] agent = GetAgentAddress(deposit);
+            
+            //byte[] agent = GetAgentAddress(deposit);
             byte[] receiver = isOk ? deposit.СarrierHash : deposit.ClientHash;
-            Token.ForceTransfer(agent, receiver);
+            Token.ForceAdd(receiver, deposit.Amount);
+            //Token.ForceTransfer(agent, receiver, deposit.Amount);
             return true;
         }
         

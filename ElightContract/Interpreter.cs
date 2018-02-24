@@ -53,7 +53,7 @@ namespace ElightContract
         {
             //add arguments
             contract.Conditions = arg.Concat(contract.Conditions);
-
+            
             //run contract with specified arguments
             Int32 counter = 0;
             Int32 value = 0;
@@ -98,7 +98,7 @@ namespace ElightContract
                 }
                 else if (value == (Int32)OPCODES.ACC)
                 {
-
+                    //will implement soon
                 }
                 else if (value == (Int32)OPCODES.CMP)
                 {

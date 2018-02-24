@@ -58,16 +58,29 @@ namespace ElightContract
             return true;
         }
 
-        public static bool ForceTransfer(byte[] from, byte[] to)
+        public static void ForceAdd(byte[] from, BigInteger amount)
         {
+            BigInteger fromValue = Storage.Get(Storage.CurrentContext, from).AsBigInteger();
+            Storage.Put(Storage.CurrentContext, from, fromValue + amount);
+        }
+
+        public static void ForceSub(byte[] from, BigInteger amount)
+        {
+            BigInteger fromValue = Storage.Get(Storage.CurrentContext, from).AsBigInteger();
+            Storage.Put(Storage.CurrentContext, from, fromValue - amount);
+        }
+
+        public static bool ForceTransfer(byte[] from, byte[] to, BigInteger amount)
+        {
+            Runtime.Notify("force transfer");
             if (from == to)
             {
                 Runtime.Notify("Transfer was forced");
                 return true;
             }
             
-            BigInteger amount = Storage.Get(Storage.CurrentContext, from).AsBigInteger();
-            Storage.Delete(Storage.CurrentContext, from);
+            BigInteger fromValue = Storage.Get(Storage.CurrentContext, from).AsBigInteger();
+            Storage.Put(Storage.CurrentContext, from, fromValue - amount);
             BigInteger toValue = Storage.Get(Storage.CurrentContext, to).AsBigInteger();
             Storage.Put(Storage.CurrentContext, to, toValue + amount);
             Runtime.Notify("Transfer was forced");
