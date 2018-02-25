@@ -7,6 +7,7 @@ using System.ComponentModel;
 
 namespace ElightContract
 {
+    //Elight coin token, it's used to create deposits in contracts between clients and carriers
     public static class Token
     {
         public static string Name() => "ElightCoin";
@@ -58,33 +59,18 @@ namespace ElightContract
             return true;
         }
 
+        //it's forced because there is no checkwitness function in it
         public static void ForceAdd(byte[] from, BigInteger amount)
         {
             BigInteger fromValue = Storage.Get(Storage.CurrentContext, from).AsBigInteger();
             Storage.Put(Storage.CurrentContext, from, fromValue + amount);
         }
 
+        //it's forced because there is no checkwitness function in it
         public static void ForceSub(byte[] from, BigInteger amount)
         {
             BigInteger fromValue = Storage.Get(Storage.CurrentContext, from).AsBigInteger();
             Storage.Put(Storage.CurrentContext, from, fromValue - amount);
-        }
-
-        public static bool ForceTransfer(byte[] from, byte[] to, BigInteger amount)
-        {
-            Runtime.Notify("force transfer");
-            if (from == to)
-            {
-                Runtime.Notify("Transfer was forced");
-                return true;
-            }
-            
-            BigInteger fromValue = Storage.Get(Storage.CurrentContext, from).AsBigInteger();
-            Storage.Put(Storage.CurrentContext, from, fromValue - amount);
-            BigInteger toValue = Storage.Get(Storage.CurrentContext, to).AsBigInteger();
-            Storage.Put(Storage.CurrentContext, to, toValue + amount);
-            Runtime.Notify("Transfer was forced");
-            return true;
         }
 
         public static bool MintTokens()
@@ -119,7 +105,7 @@ namespace ElightContract
             token = token * SwapRate;
             Storage.Put(Storage.CurrentContext, senderSH, balance + token);
 
-            Runtime.Notify("MINTED", token + balance, senderSH);
+            Runtime.Notify("Minted tokens");
             return true;
         }
 

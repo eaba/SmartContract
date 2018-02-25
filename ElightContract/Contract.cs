@@ -5,6 +5,9 @@ using System.Numerics;
 
 namespace ElightContract
 {
+    //represents a real contract between carrier and client, which describes conditions like
+    //temperature, humidity and etc. It's impossible to create new neo smart contract for each 
+    //shipping (490 gas), so we decided to write them as byte code and interpret using interpreter object
     public struct Contract
     {
         public enum Option
@@ -134,6 +137,7 @@ namespace ElightContract
         }
 
         //after a propgram has been executed, its status should be changed
+        //so we sure that it's not going to be executed one more time
         public static Contract ChangeStatus(Contract contract, BigInteger i, string carrierHash, STATUS status)
         {
             contract.Status = status;

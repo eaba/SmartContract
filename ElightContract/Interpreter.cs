@@ -6,9 +6,12 @@ using System.Numerics;
 
 namespace ElightContract
 {
+    //Is used to execute contracts, contracts are created dynamically, so it's 
+    //important to have byte code and interpreter that's able to execute it
     public struct Interpreter
     {
-        //Reserved opcodes
+        //contracts are programmed using this opcodes, interpreter then executes them
+        //with arbitary parameters
         public enum OPCODES
         {
             NEG  = 0x7FFFFFFF, // MULTIPLY BY -1
@@ -18,6 +21,9 @@ namespace ElightContract
             ACC  = 0x7FFFFFFB, // a => acc_register + a
             CMP  = 0x7FFFFFFA, // a, b, c => b < a < c 
         };
+
+        //are planning to use in future version, when interpretator is more advanced,
+        //when contract's logic is much more difficult
         public enum REGISTERS
         {
             ACC  = 0
@@ -39,6 +45,7 @@ namespace ElightContract
             return Interpreter;
         }
 
+        //get output value of interpretator (actually, this is last element on stack)
         public static Int32 GetResult(Interpreter Interpreter)
         {
             if (Interpreter.stack.i != 0)
@@ -51,7 +58,7 @@ namespace ElightContract
         
         public static Interpreter Run(Interpreter interpreter, Contract contract, byte[] arg)
         {
-            //add arguments
+            //add arguments (it can be another program)
             contract.Conditions = arg.Concat(contract.Conditions);
             
             //run contract with specified arguments
@@ -117,6 +124,8 @@ namespace ElightContract
                 }
             }
             
+            //if all the program has been read and there is only one element on stack, then interpretator
+            //executed the program correctly
             interpreter.isOk = interpreter.stack.i == 0 & counter == contract.Conditions.Length;
             return interpreter;
         }

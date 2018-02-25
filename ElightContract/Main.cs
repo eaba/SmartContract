@@ -17,18 +17,14 @@ namespace ElightContract
             }
 
             Contract contract = Contract.GetContract(carrierHash, i);
-            Runtime.Notify(contract.Conditions);
-            Runtime.Notify("With deposit?");
-            Runtime.Notify(contract.ContractOption == Contract.Option.WithDeposit);
 
+            //contracts are executed for one time, as real ones
             if (contract.Status != Contract.STATUS.ACTIVE)
             {
-                Runtime.Notify("Already executed");
+                Runtime.Notify("Already have been executed");
                 return false;
             }
             
-            byte[] source = contract.Conditions;
-
             Interpreter interpreter = Interpreter.Init();
             interpreter = Interpreter.Run(interpreter, contract, arg);
 
@@ -49,6 +45,7 @@ namespace ElightContract
                     Runtime.Notify("FAILURE");
                 }
 
+                //unfreeze deposit, if this option was chosen when configuring and creating a contract
                 if (contract.ContractOption == Contract.Option.WithDeposit)
                 {
                     Deposit.Unfreeze(contract.Deposit, isConditionOk);
@@ -61,24 +58,26 @@ namespace ElightContract
 
         //05 0705
         //invoke without depositing                                                       
-        //testinvoke script_hash init ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y","-26<(x+2)*1<26",b'000000010000000a7ffffffa']
+        //testinvoke script_hash init ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y","1<x<10",b'000000010000000a7ffffffa']
         //testinvoke script_hash invoke ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y",1,b'0000000f'] //true
         //testinvoke script_hash invoke ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y",1,b'0000001a'] //false
 
         //invoke with depositing
         //testinvoke script_hash mint [] --attach-neo=1  mint some tokens
         //init contract with depositing option
-        //testinvoke script_hash initDeposit ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y","-26<(x+2)<26",b'000000010000000a7ffffffa',"AKDVzYGLczmykdtRaejgvWeZrvdkVEvQ1X",1]
+        //testinvoke script_hash initDeposit ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y","1<x<10",b'000000010000000a7ffffffa',"AKDVzYGLczmykdtRaejgvWeZrvdkVEvQ1X",1]
         //testinvoke script_hash invoke ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y",1,b'0000000f'] //true
         //testinvoke script_hash invoke ["AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y",1,b'0000001c7fffffff'] //false (-26)
         public static object Main(string operation, params object[] args)
         {
+            //initialize a new contract without deposit option
             if (operation == "init")
             {
                 Contract contract = Contract.Init((byte[])args[1], (byte[])args[2]);
                 Contract.PutContract(contract, (string)args[0]);
                 return true;
             }
+            //initialize a new contract with deposit option
             if (operation == "initDeposit")
             {
                 Contract contract = Contract.Init((byte[])args[1], (byte[])args[2]);
@@ -86,6 +85,8 @@ namespace ElightContract
                 Contract.PutContract(contract, (string)args[0]);
                 return true;
             }
+            //run contract in interpretator with specified parameters
+            //parameters are meant to be from hardware sensor that measures temperature
             else if (operation == "invoke") 
             {
                 return Invoke((string)args[0], (BigInteger)args[1], (byte[])args[2]);

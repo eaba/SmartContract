@@ -6,6 +6,7 @@ using System.Numerics;
 
 namespace ElightContract
 {
+    //represents insurance for clients in case of bad delivery
     public struct Deposit
     {
         private const Int32 kHashSize = 20;
@@ -13,11 +14,6 @@ namespace ElightContract
         public byte[] СarrierHash; 
         public byte[] ClientHash;
         public BigInteger Amount;
- 
-        public static byte[] GetAgentAddress(Deposit deposit)
-        {
-            return deposit.СarrierHash.Concat(deposit.ClientHash);
-        }
 
         public static Deposit Init(byte[] carrierHash, 
             byte[] clientHash, BigInteger amount)
@@ -36,6 +32,7 @@ namespace ElightContract
             };
         }
 
+        //freezes coins till some particular conditions are met
         public static bool Freeze(Deposit deposit)
         {
             BigInteger balance = Token.BalanceOf(deposit.СarrierHash);
@@ -45,28 +42,15 @@ namespace ElightContract
                 Runtime.Notify("Unable to freeze money. deposit > balance");
                 return false;
             }
-
-            //byte[] agent = GetAgentAddress(deposit);
-
+            
             Token.ForceSub(deposit.СarrierHash, deposit.Amount);
-            /*
-            if (Token.BalanceOf(agent) != null && Token.BalanceOf(agent) != 0)
-            {
-                Runtime.Notify("There is already one deposit with this client");
-                return false;
-            }
-            */
-            //Token.Transfer(deposit.СarrierHash, agent, deposit.Amount);
             return true;
         }
-
+        
         public static bool Unfreeze(Deposit deposit, bool isOk)
         {
-            
-            //byte[] agent = GetAgentAddress(deposit);
             byte[] receiver = isOk ? deposit.СarrierHash : deposit.ClientHash;
             Token.ForceAdd(receiver, deposit.Amount);
-            //Token.ForceTransfer(agent, receiver, deposit.Amount);
             return true;
         }
         
