@@ -30,7 +30,7 @@ You can see basic functionality of the app prototype below.
 
 ### Fourth step: Manage your contract
 
-1) Let's emulate the submitted contract:
+1) Let's emulate the submitted contract;
 2) Let's check the deposit is back.
 
 <a href="https://imgflip.com/gif/25oexz"><img src="https://i.imgflip.com/25oexz.gif" title="made at imgflip.com"/></a> <a href="https://imgflip.com/gif/25oezf"><img src="https://i.imgflip.com/25oezf.gif" title="made at imgflip.com"/></a>
