@@ -2,6 +2,8 @@
 
 Elight is the project designed to automate thermo logistics processes.
 
+![](https://lh4.googleusercontent.com/sb9TAGnA2y0hu9l0shzHMn9luWVLpXN2ost0Lt8tWRFcPcXaRB-3bN6pjWViCInSLcFno08Cz3Oxe_l1t7rg5giUL9rEwIDpYwzlSQlmTZ5pQLzqx83lT3bd2L3VIoMnn_X3N4Yx)
+
 It includes the possibility of interaction between temperature data logger device, mobile app and blockchain, where Smart Contracts implementation is the key feature.
 
 Check out our Usage Document [here](https://marlyonya.gitbooks.io/elight/content/).
